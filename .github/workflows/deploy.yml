@@ -1,0 +1,91 @@
+name: Deploy Laravel to Cloud Run
+
+# mainブランチにプッシュされたときにワークフローを実行
+on:
+  push:
+    branches:
+      - main
+
+# 環境変数を設定
+env:
+  GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GCP_SERVICE_NAME: "promane-back" # Cloud Runのサービス名
+  GCP_REGION: "asia-northeast1" # Cloud RunとArtifact Registryのリージョン
+  GCP_ARTIFACT_REPOSITORY: "cloud-run-source-deploy" # Artifact Registryのリポジトリ名
+
+jobs:
+  deploy:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: "read"
+      id-token: "write"
+
+    steps:
+      # 1. リポジトリのコードをチェックアウト
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Google Cloudへの認証
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: "google-github-actions/auth@v2"
+        with:
+          credentials_json: "${{ secrets.GCP_SA_KEY }}"
+
+      # 3. gcloud CLIのセットアップ
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      # 4. Docker認証の設定
+      - name: Configure Docker
+        run: gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev
+
+      # 4.1 Artifact Registry のリポジトリを作成（存在しなければ）
+      - name: Ensure Artifact Registry Repository exists
+        run: |
+          if ! gcloud artifacts repositories describe ${{ env.GCP_ARTIFACT_REPOSITORY }} \
+            --location=${{ env.GCP_REGION }} >/dev/null 2>&1; then
+            echo "Artifact Registry repository does not exist. Creating..."
+            gcloud artifacts repositories create ${{ env.GCP_ARTIFACT_REPOSITORY }} \
+              --repository-format=docker \
+              --location=${{ env.GCP_REGION }} \
+              --description="Docker repository for ${{ env.GCP_SERVICE_NAME }}"
+          else
+            echo "Artifact Registry repository already exists."
+          fi
+
+      # 5. Dockerイメージのビルドとプッシュ ここで dockerfile のディレクトリ指定を ./back に変更
+      - name: Build and Push Docker image
+        run: |
+          export IMAGE_NAME=${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.GCP_ARTIFACT_REPOSITORY }}/${{ env.GCP_SERVICE_NAME }}:${{ github.sha }}
+          docker build -t $IMAGE_NAME ./back
+          docker push $IMAGE_NAME
+          echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
+
+      # 6. データベースマイグレーション用ジョブを作成または更新（RDS用）
+      - name: Deploy Migration Job
+        run: |
+          gcloud run jobs deploy ${{ env.GCP_SERVICE_NAME }}-migrate \
+            --region ${{ env.GCP_REGION }} \
+            --image ${{ env.IMAGE_NAME }} \
+            --command="php" \
+            --args="artisan,migrate,--force" \
+            --task-timeout=300s \
+            --set-env-vars="APP_KEY=${{ secrets.APP_KEY }},LOG_CHANNEL=stderr,DB_CONNECTION=mysql,DB_HOST=${{ secrets.DB_HOST }},DB_PORT=${{ secrets.DB_PORT }},DB_DATABASE=${{ secrets.DB_DATABASE }},DB_USERNAME=${{ secrets.DB_USERNAME }},DB_PASSWORD=${{ secrets.DB_PASSWORD }}"
+
+      # 7. データベースマイグレーションジョブを実行
+      - name: Execute Migration Job (Asynchronously)
+        run: |
+          gcloud run jobs execute ${{ env.GCP_SERVICE_NAME }}-migrate --region ${{ env.GCP_REGION }} --no-wait
+
+      # 8. Cloud Runへデプロイ（RDS用）
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy ${{ env.GCP_SERVICE_NAME }} \
+            --image ${{ env.IMAGE_NAME }} \
+            --region ${{ env.GCP_REGION }} \
+            --platform managed \
+            --quiet \
+            --set-env-vars="APP_KEY=${{ secrets.APP_KEY }},LOG_CHANNEL=stderr,DB_CONNECTION=mysql,DB_HOST=${{ secrets.DB_HOST }},DB_PORT=${{ secrets.DB_PORT }},DB_DATABASE=${{ secrets.DB_DATABASE }},DB_USERNAME=${{ secrets.DB_USERNAME }},DB_PASSWORD=${{ secrets.DB_PASSWORD }}"
