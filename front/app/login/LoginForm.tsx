@@ -8,8 +8,7 @@ export default function LoginForm() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    const base = process.env.NEXT_PUBLIC_BASE_URL!;
-    const res = await fetch(`${base}/api/auth/login`, {
+    const res = await fetch(`/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
