@@ -3,10 +3,9 @@ import { NextResponse } from 'next/server';
 
 export async function GET(req: Request) {
   // ログアウト後に遷移させたい先
-  const redirectUrl = new URL('/login', req.url);
-
-  const res = NextResponse.redirect(redirectUrl);
-
+  const base = process.env.NEXT_PUBLIC_BASE_URL || process.env.BASE_URL || 'https://promane-front-455056438426.asia-northeast1.run.app/https://your-production-domain.example';
+  const res = NextResponse.redirect(`${base}/login`);
+  
   // 下記は互換的に cookie を maxAge:0 にする
   res.cookies.set({
     name: 'auth_token',
