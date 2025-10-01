@@ -20,10 +20,16 @@ Route::get('/error-test', function () {
 
 
 Route::post('/register', function (Request $request) {
+    $validated = $request->validate([
+        'name' => 'required|string|max:15',
+        'email' => 'required|string|email|max:50|unique:users,email',
+        'password' => 'required|string|min:8',
+    ]);
+
     $user = User::create([
-        'name' => $request->name,
-        'email' => $request->email,
-        'password' => Hash::make($request->password),
+        'name' => $validated['name'],
+        'email' => $validated['email'],
+        'password' => Hash::make($validated['password']),
     ]);
 
     $token = $user->createToken('auth_token')->plainTextToken;
@@ -39,7 +45,7 @@ Route::post('/login', function (Request $request) {
 
     if (! $user || ! Hash::check($request->password, $user->password)) {
         return response()->json([
-            'message' => 'Invalid credentials',
+            'message' => __('auth.failed'),
         ], 401);
     }
 
