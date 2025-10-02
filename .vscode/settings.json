@@ -1,0 +1,15 @@
+{
+  "editor.formatOnSave": true,
+  "[php]": {
+    "editor.defaultFormatter": "junstyle.php-cs-fixer"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "php-cs-fixer.executablePath": "${workspaceFolder}/back/vendor/bin/php-cs-fixer",
+  "php-cs-fixer.autoFixBySave": true,
+  "intelephense.format.enable": false
+}
