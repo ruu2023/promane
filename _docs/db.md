@@ -37,6 +37,29 @@ user_projects
 - created_at
 - updated_at
 
+comments (タスクへのコメント)
+
+- id
+- task_id (外部キー)
+- user_id (外部キー)
+- content
+- created_at
+- updated_at
+
+task_labels (タスクのラベル/タグ)
+
+- id
+- name
+- color
+- project_id (プロジェクト固有のラベル)
+- created_at
+- updated_at
+
+task_label_pivot (多対多関連)
+
+- task_id
+- label_id
+
 users (Laravel のデフォルトに追加)
 
 - id
@@ -86,6 +109,94 @@ Schema::create('user_projects', function (Blueprint $table) {
     // ユーザーは同じプロジェクトに複数回参加できないようにする
     $table->unique(['user_id', 'project_id', 'leave_at']);
 });
+
+// database/migrations/xxxx_xx_xx_xxxxxx_create_comments_table.php
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration {
+    public function up(): void
+    {
+        Schema::create('comments', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('task_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->text('content');
+            $table->timestamps();
+
+            // よく使う検索用
+            $table->index(['task_id', 'created_at']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('comments');
+    }
+};
+
+// database/migrations/xxxx_xx_xx_xxxxxx_create_task_labels_table.php
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration {
+    public function up(): void
+    {
+        Schema::create('task_labels', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('project_id')->constrained()->onDelete('cascade');
+            $table->string('name');
+            $table->string('color', 20)->default('#999999');
+            $table->timestamps();
+
+            // 同一プロジェクト内で同名ラベルを禁止
+            $table->unique(['project_id', 'name']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('task_labels');
+    }
+};
+
+
+// database/migrations/xxxx_xx_xx_xxxxxx_create_task_label_pivot_table.php
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration {
+    public function up(): void
+    {
+        Schema::create('task_label_pivot', function (Blueprint $table) {
+            $table->foreignId('task_id')->constrained()->onDelete('cascade');
+            $table->foreignId('label_id')->constrained(table: 'task_labels')->onDelete('cascade');
+
+            // 同一タスクに同じラベルを重複付与しない
+            $table->primary(['task_id', 'label_id']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('task_label_pivot');
+    }
+};
+```
+
+### model
+
+- model 作成コマンド
+
+```
+php artisan make:model Project
+php artisan make:model Task
+php artisan make:model UserProject
+php artisan make:model Comment
+php artisan make:model TaskLabel
 ```
 
 ```php
