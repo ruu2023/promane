@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
 
 class Project extends Model
 {
@@ -38,5 +38,12 @@ class Project extends Model
     public function activeUsers()
     {
         return $this->users()->whereNull('user_projects.leave_at');
+    }
+
+    protected function serializeDate(\DateTimeInterface $date)
+    {
+        return Carbon::instance($date)
+            ->timezone('Asia/Tokyo')
+            ->toDateTimeString(); // 例: 'Y-m-d H:i:s' 形式
     }
 }

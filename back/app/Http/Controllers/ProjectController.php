@@ -3,17 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\Project;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class ProjectController extends Controller
 {
     public function index(Request $request)
     {
-        // return response()->json($request->user()->id);
         $projects = Project::withCount('tasks')
             ->whereHas('users', fn ($q) => $q->where('users.id', $request->user()->id))
             ->latest()
             ->paginate(20);
+
         return response()->json($projects);
     }
 
@@ -34,5 +35,74 @@ class ProjectController extends Controller
         ]);
 
         return response()->json($project->load('users'), 201);
+    }
+
+    public function show(Project $project)
+    {
+        $project->load(['tasks', 'users']);
+        return response()->json($project);
+    }
+
+    public function update(Request $request, Project $project)
+    {
+        $validated = $request->validate([
+            'name' => ['sometimes', 'required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'start_at' => ['nullable', 'string'],
+            'end_at' => ['nullable', 'date', 'after_or_equal:start_at']
+        ]);
+
+        $project->update($validated);
+        return response()->json($project);
+    }
+
+    public function destroy(Project $project)
+    {
+        $project->delete();
+        return response()->json(null, 204);
+    }
+
+    // Members
+    public function members(Project $project)
+    {
+        $members = $project->users()->withPivot('role', 'join_at', 'leave_at')->get();
+        return response()->json($members);
+    }
+
+    public function addMember(Request $request, Project $project)
+    {
+        $data = $request->validate([
+            'user_id' => ['required', 'exists:user,,id'],
+            'role' => ['required', 'in:owner,member,viewer'],
+        ]);
+
+        $project->users()->syncWithoutDetaching([
+            $data['user_id'] => ['role' => $data['role'], 'join_at' => now()]
+        ]);
+
+        return response()->json(['message' => 'Member added']);
+    }
+
+    public function updateMember(Request $request, Project $project, User $user)
+    {
+        $data = $request->validate([
+            'role' => ['required', 'in:owner,member,viewer'],
+            'leave' => ['nullable', 'boolean'], // true で退場日をセット(leave_at)
+        ]);
+
+        $attrs = ['role' => $data['role']];
+        if (!empty($data['leave'])) {
+            $attrs['leave_at'] = now();
+        }
+
+        $project->users()->updateExistingPivot($user->id, $attrs);
+
+        return response()->json(['message' => 'Member updated']);
+    }
+
+    public function removeMember(Request $request, Project $project, User $user)
+    {
+        $project->users()->detach($user->id);
+        return response()->json(['message' => 'Member removed']);
     }
 }
