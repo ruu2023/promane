@@ -26,4 +26,10 @@ Route::middleware('auth:sanctum')->get('/me', [App\Http\Controllers\AuthControll
 Route::middleware('auth:sanctum')->group(function () {
     // Projects
     Route::apiResource('projects', ProjectController::class);
+
+    // Project members
+    Route::get('projects/{project}/members', [ProjectController::class, 'members']);
+    Route::post('projects/{project}/members', [ProjectController::class, 'addMember']);
+    Route::patch('projects/{project}/members/{user}', [ProjectController::class, 'updateMember']);
+    Route::delete('projects/{project}/members/{user}', [ProjectController::class, 'removeMember']);
 });
