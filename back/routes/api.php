@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\TaskController;
 use Illuminate\Support\Facades\Route;
 
 /**
@@ -32,4 +33,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('projects/{project}/members', [ProjectController::class, 'addMember']);
     Route::patch('projects/{project}/members/{user}', [ProjectController::class, 'updateMember']);
     Route::delete('projects/{project}/members/{user}', [ProjectController::class, 'removeMember']);
+
+    // Tasks
+    Route::apiResource('projects.tasks', TaskController::class); // ネストでプロジェクト配下
 });
