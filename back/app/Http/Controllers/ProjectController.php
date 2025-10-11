@@ -72,7 +72,7 @@ class ProjectController extends Controller
     public function addMember(Request $request, Project $project)
     {
         $data = $request->validate([
-            'user_id' => ['required', 'exists:user,,id'],
+            'user_id' => ['required', 'exists:users,id'],
             'role' => ['required', 'in:owner,member,viewer'],
         ]);
 
