@@ -36,4 +36,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Tasks
     Route::apiResource('projects.tasks', TaskController::class); // ネストでプロジェクト配下
+
+    // 今日やること
+    Route::post('tasks/{task}/move-to-today', [TaskController::class, 'moveToToday']);
+    Route::get('tasks/today', [TaskController::class, 'getTodayTasks']);
 });

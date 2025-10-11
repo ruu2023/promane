@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\TaskLabel;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class TaskController extends Controller
@@ -34,8 +35,9 @@ class TaskController extends Controller
             'assigned_to' => ['nullable', 'exists:users,id'],
         ]);
 
-        $task = $project->tasks()->create($validated, [
-            'created_by' => $request->user()->id,
+        $task = $project->tasks()->create([
+            ...$validated,
+            'created_by' => $request->user()->id
         ]);
 
         return response()->json($task->load(['assignee', 'creator', 'labels']), 201);
@@ -43,7 +45,7 @@ class TaskController extends Controller
 
     public function show(Project $project, Task $task)
     {
-        $task->load(['assginee', 'creattor', 'labeles', 'comments.user']);
+        $task->load(['assignee', 'creator', 'labels', 'comments.user']);
         return response()->json($task);
     }
 
