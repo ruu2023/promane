@@ -67,7 +67,11 @@ class TaskController extends Controller
         return response()->json($task->load(['assignee', 'creator', 'labels']));
     }
 
-    public function destroy(Task $task)
+    /**
+     * @param Project $project ※(must)ルートモデルバインディングのスコープ解決にのみ使用
+     * @param Task $task
+     */
+    public function destroy(Project $project, Task $task)
     {
         $task->delete();
         return response()->json(null, 204);
