@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TaskController;
 use Illuminate\Support\Facades\Route;
@@ -40,4 +41,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // 今日やること
     Route::post('tasks/{task}/move-to-today', [TaskController::class, 'moveToToday']);
     Route::get('tasks/today', [TaskController::class, 'getTodayTasks']);
+
+    // Comments
+    Route::apiResource('tasks.comments', CommentController::class)->shallow();
 });

@@ -9,7 +9,7 @@ class Comment extends Model
 {
     use HasFactory;
 
-    protected $fillabe = [
+    protected $fillable = [
         'task_id',
         'user_id',
         'content',
@@ -25,4 +25,3 @@ class Comment extends Model
         return $this->belongsTo(User::class);
     }
 }
-

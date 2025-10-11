@@ -29,11 +29,36 @@ class CommentController extends Controller
     }
 
     /**
-     * @param Task $task ※(must)ルートモデルバインディングのスコープ解決にのみ使用
+     * @param Task $task (must) 親子関係の検証（スコープ解決）にのみ使用。
      * @param Comment $comment
      */
     public function show(Task $task, Comment $comment)
     {
         return response()->json($comment->load('user'));
+    }
+
+    /**
+     * @param Request $request
+     * @param Task $task (must) 親子関係の検証（スコープ解決）にのみ使用。
+     * @param Comment $comment
+     */
+    public function update(Request $request, Task $task, Comment $comment)
+    {
+        $validated = $request->validate([
+            'content' => ['required', 'string', 'max:5000']
+        ]);
+
+        $comment->update($validated);
+        return response()->json($comment->load('user'));
+    }
+
+    /**
+     * @param Task $task (must) 親子関係の検証（スコープ解決）にのみ使用。
+     * @param Comment $comment
+     */
+    public function destroy(Task $task, Comment $comment)
+    {
+        $comment->delete();
+        return response()->json(null, 204);
     }
 }
