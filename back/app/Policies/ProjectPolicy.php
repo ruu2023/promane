@@ -21,7 +21,8 @@ class ProjectPolicy
      */
     public function view(User $user, Project $project): bool
     {
-        return false;
+        return $user->projects()->where('project_id', $project->id)
+                    ->exists();
     }
 
     /**
@@ -37,7 +38,8 @@ class ProjectPolicy
      */
     public function update(User $user, Project $project): bool
     {
-        return false;
+        return $user->projects()->where('project_id', $project->id)
+                    ->exists();
     }
 
     /**
@@ -45,7 +47,9 @@ class ProjectPolicy
      */
     public function delete(User $user, Project $project): bool
     {
-        return false;
+        return $user->projects()->where('project_id', $project->id)
+                    ->wherePivot('role', 'owner')
+                    ->exists();
     }
 
     /**
@@ -64,8 +68,41 @@ class ProjectPolicy
         return false;
     }
 
+    public function addTask(User $user, Project $project): bool
+    {
+        return $user->projects()->where('project_id', $project->id)->exists();
+    }
+
     public function addLabel(User $user, Project $project): bool
     {
         return $user->projects()->where('project_id', $project->id)->exists();
+    }
+
+    public function addMember(User $user, Project $project): bool
+    {
+        return $user->projects()->where('project_id', $project->id)->exists();
+    }
+
+    public function updateMember(User $user, Project $project): bool
+    {
+        return $user->projects()->where('project_id', $project->id)->exists();
+    }
+
+    public function removeMember(User $user, Project $project, User $memberToRemove): bool
+    {
+        $isOwner = $user->projects()->where('project_id', $project->id)
+                        ->wherePivot('role', 'owner')
+                        ->exists();
+
+        if (!$isOwner) {
+            return false;
+        }
+
+        // 自身の削除に対して、owner 不在を防止
+        if ($user->id === $memberToRemove->id) {
+            return $project->users()->withPivot('role', 'owner')->count() > 1;
+        }
+
+        return true;
     }
 }

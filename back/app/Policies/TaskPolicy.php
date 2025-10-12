@@ -21,7 +21,7 @@ class TaskPolicy
      */
     public function view(User $user, Task $task): bool
     {
-        return false;
+        return $user->projects()->where('project_id', $task->project_id)->exists();
     }
 
     /**
@@ -37,7 +37,7 @@ class TaskPolicy
      */
     public function update(User $user, Task $task): bool
     {
-        return false;
+        return $user->projects()->where('project_id', $task->project_id)->exists();
     }
 
     /**
@@ -45,7 +45,9 @@ class TaskPolicy
      */
     public function delete(User $user, Task $task): bool
     {
-        return false;
+        return $user->projects()->where('project_id', $task->project_id)
+                    ->wherePivot('role', 'owner')
+                    ->exists();
     }
 
     /**
@@ -65,6 +67,21 @@ class TaskPolicy
     }
 
     public function addComment(User $user, Task $task): bool
+    {
+        return $user->projects()->where('project_id', $task->project_id)->exists();
+    }
+
+    public function moveToToday(User $user, Task $task): bool
+    {
+        return $user->projects()->where('project_id', $task->project_id)->exists();
+    }
+
+    public function attachLabel(User $user, Task $task): bool
+    {
+        return $user->projects()->where('project_id', $task->project_id)->exists();
+    }
+
+    public function detachLabel(User $user, Task $task): bool
     {
         return $user->projects()->where('project_id', $task->project_id)->exists();
     }

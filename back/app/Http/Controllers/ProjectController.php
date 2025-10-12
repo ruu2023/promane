@@ -39,12 +39,14 @@ class ProjectController extends Controller
 
     public function show(Project $project)
     {
+        $this->authorize('view', $project);
         $project->load(['tasks', 'users']);
         return response()->json($project);
     }
 
     public function update(Request $request, Project $project)
     {
+        $this->authorize('update', $project);
         $validated = $request->validate([
             'name' => ['sometimes', 'required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
@@ -58,6 +60,7 @@ class ProjectController extends Controller
 
     public function destroy(Project $project)
     {
+        $this->authorize('delete', $project);
         $project->delete();
         return response()->json(null, 204);
     }
@@ -71,6 +74,7 @@ class ProjectController extends Controller
 
     public function addMember(Request $request, Project $project)
     {
+        $this->authorize('addMember', $project);
         $data = $request->validate([
             'user_id' => ['required', 'exists:users,id'],
             'role' => ['required', 'in:owner,member,viewer'],
@@ -85,6 +89,7 @@ class ProjectController extends Controller
 
     public function updateMember(Request $request, Project $project, User $user)
     {
+        $this->authorize('updateMember', $project);
         $data = $request->validate([
             'role' => ['required', 'in:owner,member,viewer'],
             'leave' => ['nullable', 'boolean'], // true で退場日をセット(leave_at)
@@ -100,8 +105,9 @@ class ProjectController extends Controller
         return response()->json(['message' => 'Member updated']);
     }
 
-    public function removeMember(Request $request, Project $project, User $user)
+    public function removeMember(Project $project, User $user)
     {
+        $this->authorize('removeMember', [$project, $user]);
         $project->users()->detach($user->id);
         return response()->json(['message' => 'Member removed']);
     }

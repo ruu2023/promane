@@ -24,6 +24,7 @@ class TaskController extends Controller
 
     public function store(Request $request, Project $project)
     {
+        $this->authorize('addTask', $project);
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
@@ -43,14 +44,16 @@ class TaskController extends Controller
         return response()->json($task->load(['assignee', 'creator', 'labels']), 201);
     }
 
-    public function show(Project $project, Task $task)
+    public function show(Task $task)
     {
+        $this->authorize('view', $task);
         $task->load(['assignee', 'creator', 'labels', 'comments.user']);
         return response()->json($task);
     }
 
-    public function update(Request $request, Project $project, Task $task)
+    public function update(Request $request, Task $task)
     {
+        $this->authorize('update', $task);
         $validated = $request->validate([
             'name' => ['sometimes', 'required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
@@ -67,12 +70,9 @@ class TaskController extends Controller
         return response()->json($task->load(['assignee', 'creator', 'labels']));
     }
 
-    /**
-     * @param Project $project ※(must)ルートモデルバインディングのスコープ解決にのみ使用
-     * @param Task $task
-     */
-    public function destroy(Project $project, Task $task)
+    public function destroy(Task $task)
     {
+        $this->authorize('delete', $task);
         $task->delete();
         return response()->json(null, 204);
     }
@@ -80,6 +80,7 @@ class TaskController extends Controller
     // 今日やること
     public function moveToToday(Task $task)
     {
+        $this->authorize('moveToToday', $task);
         if ($task->is_today) {
             return response()->json(['message' => 'タスクは既に「今日やること」です', 200]);
         }
@@ -103,15 +104,17 @@ class TaskController extends Controller
     // Labels attach/detach
     public function attachLabel(Task $task, TaskLabel $label)
     {
+        $this->authorize('attachLabel', $task);
         // 同一プロジェクトのラベルだけ付与できるようチェック
         abort_unless($task->project_id === $label->project_id, 422, 'Label belongs to different project');
 
-        $task->laels()->syncWithoutDetaching([$label->id]);
+        $task->labels()->syncWithoutDetaching([$label->id]);
         return response()->json(['message' => 'label attached']);
     }
 
     public function detachLabel(Task $task, TaskLabel $label)
     {
+        $this->authorize('detachLabel', $task);
         $task->labels()->detach($label->id);
         return response()->json(['message' => 'Label detached']);
     }

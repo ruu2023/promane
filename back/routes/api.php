@@ -27,29 +27,23 @@ Route::middleware('auth:sanctum')->get('/me', [App\Http\Controllers\AuthControll
  * Protected Routes
  */
 Route::middleware('auth:sanctum')->group(function () {
-    // Projects
-    Route::apiResource('projects', ProjectController::class);
-
-    // Project members
+    // --- Project members ---
     Route::get('projects/{project}/members', [ProjectController::class, 'members']);
     Route::post('projects/{project}/members', [ProjectController::class, 'addMember']);
     Route::patch('projects/{project}/members/{user}', [ProjectController::class, 'updateMember']);
     Route::delete('projects/{project}/members/{user}', [ProjectController::class, 'removeMember']);
 
-    // Tasks
-    Route::apiResource('projects.tasks', TaskController::class); // ネストでプロジェクト配下
-
-    // 今日やること
+    // --- Today's ---
     Route::post('tasks/{task}/move-to-today', [TaskController::class, 'moveToToday']);
     Route::get('tasks/today', [TaskController::class, 'getTodayTasks']);
 
-    // Task Labels
-    Route::apiResource('projects.labels', TaskLabelController::class)->shallow();
-
-    // Task <-> Labels attach/detach
+    // --- Task <-> Labels attach/detach ---
     Route::post('tasks/{task}/labels/{label}', [TaskController::class, 'attachLabel']);
     Route::delete('tasks/{task}/labels/{label}', [TaskController::class, 'detachLabel']);
 
-    // Comments
+    // --- ApiResources ---
+    Route::apiResource('projects', ProjectController::class);
+    Route::apiResource('projects.tasks', TaskController::class)->shallow();
+    Route::apiResource('projects.labels', TaskLabelController::class)->shallow();
     Route::apiResource('tasks.comments', CommentController::class)->shallow();
 });
