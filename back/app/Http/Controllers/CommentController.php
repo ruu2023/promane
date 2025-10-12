@@ -16,6 +16,7 @@ class CommentController extends Controller
 
     public function store(Request $request, Task $task)
     {
+        $this->authorize('addComment', $task);
         $validated = $request->validate([
             'content' => ['required', 'string', 'max:5000']
         ]);
@@ -28,22 +29,15 @@ class CommentController extends Controller
         return response()->json($comment->load('user'), 201);
     }
 
-    /**
-     * @param Task $task (must) 親子関係の検証（スコープ解決）にのみ使用。
-     * @param Comment $comment
-     */
-    public function show(Task $task, Comment $comment)
+    public function show(Comment $comment)
     {
+        $this->authorize('view', $comment);
         return response()->json($comment->load('user'));
     }
 
-    /**
-     * @param Request $request
-     * @param Task $task (must) 親子関係の検証（スコープ解決）にのみ使用。
-     * @param Comment $comment
-     */
-    public function update(Request $request, Task $task, Comment $comment)
+    public function update(Request $request, Comment $comment)
     {
+        $this->authorize('update', $comment);
         $validated = $request->validate([
             'content' => ['required', 'string', 'max:5000']
         ]);
@@ -52,12 +46,9 @@ class CommentController extends Controller
         return response()->json($comment->load('user'));
     }
 
-    /**
-     * @param Task $task (must) 親子関係の検証（スコープ解決）にのみ使用。
-     * @param Comment $comment
-     */
-    public function destroy(Task $task, Comment $comment)
+    public function destroy(Comment $comment)
     {
+        $this->authorize('delete', $comment);
         $comment->delete();
         return response()->json(null, 204);
     }
