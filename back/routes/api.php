@@ -3,6 +3,7 @@
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\TaskLabelController;
 use Illuminate\Support\Facades\Route;
 
 /**
@@ -41,6 +42,13 @@ Route::middleware('auth:sanctum')->group(function () {
     // 今日やること
     Route::post('tasks/{task}/move-to-today', [TaskController::class, 'moveToToday']);
     Route::get('tasks/today', [TaskController::class, 'getTodayTasks']);
+
+    // Task Labels
+    Route::apiResource('projects.labels', TaskLabelController::class)->shallow();
+
+    // Task <-> Labels attach/detach
+    Route::post('tasks/{task}/labels/{label}', [TaskController::class, 'attachLabel']);
+    Route::delete('tasks/{task}/labels/{label}', [TaskController::class, 'detachLabel']);
 
     // Comments
     Route::apiResource('tasks.comments', CommentController::class)->shallow();

@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Traits\SerializesDatesToJst;
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -37,15 +36,13 @@ class Project extends Model
                     ->withTimestamps();
     }
 
+    public function labels()
+    {
+        return $this->hasMany(TaskLabel::class);
+    }
+
     public function activeUsers()
     {
         return $this->users()->whereNull('user_projects.leave_at');
-    }
-
-    protected function serializeDate(\DateTimeInterface $date)
-    {
-        return Carbon::instance($date)
-            ->timezone('Asia/Tokyo')
-            ->toDateTimeString(); // 例: 'Y-m-d H:i:s' 形式
     }
 }
