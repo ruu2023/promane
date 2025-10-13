@@ -64,6 +64,58 @@ class TaskApiTest extends TestCase
         ]);
     }
 
+    public function test_a_project_member_can_update_a_task(): void
+    {
+        $user = User::factory()->create();
+        $project = Project::factory()->create();
+
+        $project->users()->attach($user, ['role' => 'member']);
+
+        $task = Task::factory()->create(['project_id' => $project->id, 'created_by' => $user->id]);
+
+        $taskData = [
+            'name' => 'テストタスクの更新',
+            'description' => 'これはテストタスクです。'
+        ];
+
+        $response = $this->actingAs($user, 'sanctum')
+                        ->putJson("/api/tasks/{$task->id}", $taskData);
+
+        // assert
+        $response->assertStatus(200);
+
+        $this->assertDatabaseHas('tasks', [
+            'name' => 'テストタスクの更新',
+            'description' => 'これはテストタスクです。'
+        ]);
+    }
+
+    public function test_a_non_project_member_cannot_update_a_task(): void
+    {
+        $user = User::factory()->create();
+        $project = Project::factory()->create();
+
+        // $project->users()->attach($user, ['role' => 'member']);
+
+        $task = Task::factory()->create(['project_id' => $project->id, 'created_by' => $user->id]);
+
+        $taskData = [
+            'name' => 'テストタスクの更新',
+            'description' => 'これはテストタスクです。'
+        ];
+
+        $response = $this->actingAs($user, 'sanctum')
+                        ->putJson("/api/tasks/{$task->id}", $taskData);
+
+        // assert
+        $response->assertStatus(403);
+
+        $this->assertDatabaseMissing('tasks', [
+            'name' => 'テストタスクの更新',
+            'description' => 'これはテストタスクです。'
+        ]);
+    }
+
     public function test_a_project_member_cannot_delete_task_if_not_owner()
     {
         $user = User::factory()->create();
