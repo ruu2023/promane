@@ -1,9 +1,9 @@
 <?php
 
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -16,18 +16,10 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        $exceptions->render(function (Throwable $e, $request) {
-            // API リクエストは必ず JSON で返す
+        // Unauthenticated (認証エラー) の場合のJSONレスポンスを定義
+        $exceptions->render(function (AuthenticationException $e, $request) {
             if ($request->is('api/*') || $request->expectsJson()) {
-                // $e が HttpException のインスタンスかチェック
-                $statusCode = $e instanceof HttpException ? $e->getStatusCode() : 500;
-                return response()->json([
-                    'message' => $e->getMessage(),
-                    'exception' => class_basename($e),
-                ], $statusCode);
+                return response()->json(['message' => 'Unauthenticated.'], 401);
             }
-
-            // それ以外はデフォルト処理
-            return null;
         });
     })->create();
