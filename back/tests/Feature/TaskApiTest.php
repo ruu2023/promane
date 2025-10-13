@@ -13,6 +13,94 @@ class TaskApiTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_unauthorized_user_cannot_read_tasks()
+    {
+        $task = Task::factory()->create();
+
+        $this->getJson("api/projects/{$task->project_id}/tasks")->assertStatus(401);
+    }
+
+    public function test_a_user_can_only_see_their_own_projects_task(): void
+    {
+        $userA = User::factory()->create();
+        $userB = User::factory()->create();
+
+        $projectForUserA = Project::factory()->create();
+        $projectForUserA->users()->attach($userA);
+        $taskForUserA = Task::factory()->create(["project_id" => $projectForUserA->id, "created_by" => $userA->id]);
+
+        $projectForUserB = Project::factory()->create();
+        $projectForUserB->users()->attach($userB);
+        $taskForUserB = Task::factory()->create(["project_id" => $projectForUserB->id, "created_by" => $userB->id]);
+
+        $response = $this->actingAs($userA, 'sanctum')->getJson("/api/projects/{$projectForUserA->id}/tasks");
+
+        $response->assertOk();
+
+        $response->assertJsonCount(1, 'data');
+
+        $response->assertJsonFragment([
+            'id' => $taskForUserA->id,
+            'name' => $taskForUserA->name,
+        ]);
+
+        $response->assertJsonMissing([
+            'id' => $taskForUserB->id,
+            'name' => $taskForUserB->name,
+        ]);
+    }
+
+    public function a_user_cannot_see_tasks_in_another_users_project(): void
+    {
+        $userA = User::factory()->create();
+        $userB = User::factory()->create();
+
+        $projectForUserB = Project::factory()->create();
+        $projectForUserB->users()->attach($userB);
+        Task::factory()->create(['project_id' => $projectForUserB->id]);
+
+        $this->actingAs($userA, 'sanctum')
+             ->getJson("/api/projects/{$projectForUserB->id}/tasks")
+             ->assertForbidden();
+    }
+
+    public function test_a_user_can_only_see_their_own_projects_task_detail(): void
+    {
+        $userA = User::factory()->create();
+        $userB = User::factory()->create();
+
+        $projectForUserA = Project::factory()->create();
+        $projectForUserA->users()->attach($userA);
+        $taskForUserA = Task::factory()->create(["project_id" => $projectForUserA->id, "created_by" => $userA->id]);
+
+        $projectForUserB = Project::factory()->create();
+        $projectForUserB->users()->attach($userB);
+        $taskForUserB = Task::factory()->create(["project_id" => $projectForUserB->id, "created_by" => $userB->id]);
+
+        $response = $this->actingAs($userA, 'sanctum')->getJson("/api/tasks/{$taskForUserA->id}");
+
+        $response->assertOk();
+
+        $response->assertJsonFragment([
+            'id' => $taskForUserA->id,
+            'name' => $taskForUserA->name,
+        ]);
+    }
+
+    public function a_user_cannot_see_detail_of_task_in_another_users_project(): void
+    {
+        $userA = User::factory()->create();
+        $userB = User::factory()->create();
+
+        $projectForUserB = Project::factory()->create();
+        $projectForUserB->users()->attach($userB);
+        $taskForUserB = Task::factory()->create(['project_id' => $projectForUserB->id]);
+
+        $this->actingAs($userA, 'sanctum')
+             ->getJson("/api/tasks/{$taskForUserB->id}")
+             ->assertForbidden();
+    }
+
     public function test_a_member_can_create_a_task(): void
     {
         // エラー時 500 だけでなく、stack trace を出す
