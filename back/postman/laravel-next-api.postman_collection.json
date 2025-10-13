@@ -57,12 +57,10 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8000/api/projects/20",
-							"protocol": "http",
+							"raw": "{{BASE_URL}}/api/projects/20",
 							"host": [
-								"localhost"
+								"{{BASE_URL}}"
 							],
-							"port": "8000",
 							"path": [
 								"api",
 								"projects",
@@ -89,12 +87,10 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8000/api/projects/1/members",
-							"protocol": "http",
+							"raw": "{{BASE_URL}}/api/projects/1/members",
 							"host": [
-								"localhost"
+								"{{BASE_URL}}"
 							],
-							"port": "8000",
 							"path": [
 								"api",
 								"projects",
@@ -123,7 +119,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Postman タスク\",\n    \"description\": \"Postman から送信\",\n    \"start_at\": \"2025-10-01\",\n    \"end_at\": \"2025-11-01\"\n}",
+							"raw": "{\n    \"name\": \"\",\n    \"description\": \"Postman から送信\",\n    \"start_at\": \"2025-10-01\",\n    \"end_at\": \"2025-11-01\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -131,12 +127,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8000/api/projects",
-							"protocol": "http",
+							"raw": "{{BASE_URL}}/api/projects",
 							"host": [
-								"localhost"
+								"{{BASE_URL}}"
 							],
-							"port": "8000",
 							"path": [
 								"api",
 								"projects"
@@ -162,12 +156,10 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8000/api/projects/21",
-							"protocol": "http",
+							"raw": "{{BASE_URL}}/api/projects/21",
 							"host": [
-								"localhost"
+								"{{BASE_URL}}"
 							],
-							"port": "8000",
 							"path": [
 								"api",
 								"projects",
@@ -203,12 +195,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8000/api/projects/20",
-							"protocol": "http",
+							"raw": "{{BASE_URL}}/api/projects/20",
 							"host": [
-								"localhost"
+								"{{BASE_URL}}"
 							],
-							"port": "8000",
 							"path": [
 								"api",
 								"projects",
@@ -244,12 +234,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8000/api/projects/1/members",
-							"protocol": "http",
+							"raw": "{{BASE_URL}}/api/projects/1/members",
 							"host": [
-								"localhost"
+								"{{BASE_URL}}"
 							],
-							"port": "8000",
 							"path": [
 								"api",
 								"projects",
@@ -329,12 +317,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8000/api/projects/18/members/1",
-							"protocol": "http",
+							"raw": "{{BASE_URL}}/api/projects/18/members/1",
 							"host": [
-								"localhost"
+								"{{BASE_URL}}"
 							],
-							"port": "8000",
 							"path": [
 								"api",
 								"projects",
@@ -369,7 +355,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Postman タスク8\",\n    \"description\": \"Postman から送信\",\n    \"status\": \"in_progress\",\n    \"priority\": \"low\",\n    \"start_at\": \"2025-10-01\",\n    \"end_at\": \"2025-11-01\",\n    \"assigned_to\": \"2\"\n}",
+							"raw": "{\n    \"name\": \"Postman タスク15\",\n    \"description\": \"Postman から送信\",\n    \"status\": \"in_progress\",\n    \"priority\": \"low\",\n    \"start_at\": \"2025-10-01\",\n    \"end_at\": \"2025-11-01\",\n    \"assigned_to\": \"1\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -377,12 +363,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8000/api/projects/1/tasks",
-							"protocol": "http",
+							"raw": "{{BASE_URL}}/api/projects/1/tasks",
 							"host": [
-								"localhost"
+								"{{BASE_URL}}"
 							],
-							"port": "8000",
 							"path": [
 								"api",
 								"projects",
@@ -410,12 +394,10 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8000/api/tasks/3/move-to-today",
-							"protocol": "http",
+							"raw": "{{BASE_URL}}/api/tasks/3/move-to-today",
 							"host": [
-								"localhost"
+								"{{BASE_URL}}"
 							],
-							"port": "8000",
 							"path": [
 								"api",
 								"tasks",
@@ -443,12 +425,10 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8000/api/tasks/today",
-							"protocol": "http",
+							"raw": "{{BASE_URL}}/api/tasks/today",
 							"host": [
-								"localhost"
+								"{{BASE_URL}}"
 							],
-							"port": "8000",
 							"path": [
 								"api",
 								"tasks",
@@ -475,12 +455,10 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8000/api/projects/1/tasks",
-							"protocol": "http",
+							"raw": "{{BASE_URL}}/api/projects/1/tasks",
 							"host": [
-								"localhost"
+								"{{BASE_URL}}"
 							],
-							"port": "8000",
 							"path": [
 								"api",
 								"projects",
@@ -517,12 +495,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8000/api/tasks/4",
-							"protocol": "http",
+							"raw": "{{BASE_URL}}/api/tasks/4",
 							"host": [
-								"localhost"
+								"{{BASE_URL}}"
 							],
-							"port": "8000",
 							"path": [
 								"api",
 								"tasks",
@@ -549,16 +525,14 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8000/api/tasks/4",
-							"protocol": "http",
+							"raw": "{{BASE_URL}}/api/tasks/1",
 							"host": [
-								"localhost"
+								"{{BASE_URL}}"
 							],
-							"port": "8000",
 							"path": [
 								"api",
 								"tasks",
-								"4"
+								"1"
 							]
 						}
 					},
@@ -581,12 +555,10 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8000/api/tasks/4",
-							"protocol": "http",
+							"raw": "{{BASE_URL}}/api/tasks/4",
 							"host": [
-								"localhost"
+								"{{BASE_URL}}"
 							],
-							"port": "8000",
 							"path": [
 								"api",
 								"tasks",
@@ -613,12 +585,10 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8000/api/tasks/3/labels/3",
-							"protocol": "http",
+							"raw": "{{BASE_URL}}/api/tasks/3/labels/3",
 							"host": [
-								"localhost"
+								"{{BASE_URL}}"
 							],
-							"port": "8000",
 							"path": [
 								"api",
 								"tasks",
@@ -631,7 +601,7 @@
 					"response": []
 				},
 				{
-					"name": "dettachLabel Copy",
+					"name": "dettachLabel",
 					"request": {
 						"method": "DELETE",
 						"header": [
@@ -647,12 +617,10 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8000/api/tasks/3/labels/3",
-							"protocol": "http",
+							"raw": "{{BASE_URL}}/api/tasks/3/labels/3",
 							"host": [
-								"localhost"
+								"{{BASE_URL}}"
 							],
-							"port": "8000",
 							"path": [
 								"api",
 								"tasks",
@@ -695,12 +663,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8000/api/tasks/3/comments",
-							"protocol": "http",
+							"raw": "{{BASE_URL}}/api/tasks/3/comments",
 							"host": [
-								"localhost"
+								"{{BASE_URL}}"
 							],
-							"port": "8000",
 							"path": [
 								"api",
 								"tasks",
@@ -728,12 +694,10 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8000/api/comments/1",
-							"protocol": "http",
+							"raw": "{{BASE_URL}}/api/comments/1",
 							"host": [
-								"localhost"
+								"{{BASE_URL}}"
 							],
-							"port": "8000",
 							"path": [
 								"api",
 								"comments",
@@ -769,12 +733,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8000/api/comments/7",
-							"protocol": "http",
+							"raw": "{{BASE_URL}}/api/comments/7",
 							"host": [
-								"localhost"
+								"{{BASE_URL}}"
 							],
-							"port": "8000",
 							"path": [
 								"api",
 								"comments",
@@ -801,12 +763,10 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8000/api/tasks/3/comments",
-							"protocol": "http",
+							"raw": "{{BASE_URL}}/api/tasks/3/comments",
 							"host": [
-								"localhost"
+								"{{BASE_URL}}"
 							],
-							"port": "8000",
 							"path": [
 								"api",
 								"tasks",
@@ -834,12 +794,10 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8000/api/comments/6",
-							"protocol": "http",
+							"raw": "{{BASE_URL}}/api/comments/6",
 							"host": [
-								"localhost"
+								"{{BASE_URL}}"
 							],
-							"port": "8000",
 							"path": [
 								"api",
 								"comments",
@@ -880,12 +838,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8000/api/projects/1/labels",
-							"protocol": "http",
+							"raw": "{{BASE_URL}}/api/projects/1/labels",
 							"host": [
-								"localhost"
+								"{{BASE_URL}}"
 							],
-							"port": "8000",
 							"path": [
 								"api",
 								"projects",
@@ -913,12 +869,10 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8000/api/projects/1/labels",
-							"protocol": "http",
+							"raw": "{{BASE_URL}}/api/projects/1/labels",
 							"host": [
-								"localhost"
+								"{{BASE_URL}}"
 							],
-							"port": "8000",
 							"path": [
 								"api",
 								"projects",
@@ -955,12 +909,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8000/api/labels/1",
-							"protocol": "http",
+							"raw": "{{BASE_URL}}/api/labels/1",
 							"host": [
-								"localhost"
+								"{{BASE_URL}}"
 							],
-							"port": "8000",
 							"path": [
 								"api",
 								"labels",
@@ -987,12 +939,10 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8000/api/labels/1",
-							"protocol": "http",
+							"raw": "{{BASE_URL}}/api/labels/1",
 							"host": [
-								"localhost"
+								"{{BASE_URL}}"
 							],
-							"port": "8000",
 							"path": [
 								"api",
 								"labels",
@@ -1019,12 +969,10 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8000/api/labels/1",
-							"protocol": "http",
+							"raw": "{{BASE_URL}}/api/labels/1",
 							"host": [
-								"localhost"
+								"{{BASE_URL}}"
 							],
-							"port": "8000",
 							"path": [
 								"api",
 								"labels",
@@ -1049,7 +997,8 @@
 									""
 								],
 								"type": "text/javascript",
-								"packages": {}
+								"packages": {},
+								"requests": {}
 							}
 						}
 					],
@@ -1066,12 +1015,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8000/api/register",
-							"protocol": "http",
+							"raw": "{{BASE_URL}}/api/register",
 							"host": [
-								"localhost"
+								"{{BASE_URL}}"
 							],
-							"port": "8000",
 							"path": [
 								"api",
 								"register"
@@ -1121,7 +1068,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\" : \"test4@mail\",\n    \"password\": \"password\"\n}",
+							"raw": "{\n    \"email\" : \"test1@mail\",\n    \"password\": \"password\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1129,127 +1076,13 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8000/api/login",
-							"protocol": "http",
+							"raw": "{{BASE_URL}}/api/login",
 							"host": [
-								"localhost"
+								"{{BASE_URL}}"
 							],
-							"port": "8000",
 							"path": [
 								"api",
 								"login"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "userDetail",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = pm.response.json();",
-									"",
-									"// トークン候補を探す",
-									"var token = jsonData.token ",
-									"         || (jsonData.data && jsonData.data.token);",
-									"",
-									"if (token) {",
-									"    pm.environment.set(\"authToken\", token);",
-									"    console.log(\"✅ Saved to ENV:\", token);",
-									"} else {",
-									"    console.log(\"⚠️ Token not found in response:\", jsonData);",
-									"}"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"auth": {
-							"type": "noauth"
-						},
-						"method": "GET",
-						"header": [
-							{
-								"key": "Cache-Control",
-								"value": "no-cache",
-								"name": "cache-control",
-								"type": "text"
-							},
-							{
-								"key": "Postman-Token",
-								"value": "<calculated when request is sent>",
-								"name": "postman-token",
-								"type": "text"
-							},
-							{
-								"key": "Host",
-								"value": "<calculated when request is sent>",
-								"name": "host",
-								"type": "text"
-							},
-							{
-								"key": "User-Agent",
-								"value": "PostmanRuntime/7.39.1",
-								"name": "user-agent",
-								"type": "text"
-							},
-							{
-								"key": "Accept",
-								"value": "*/*",
-								"name": "accept",
-								"type": "text"
-							},
-							{
-								"key": "Accept-Encoding",
-								"value": "gzip, deflate, br",
-								"name": "accept-encoding",
-								"type": "text"
-							},
-							{
-								"key": "Connection",
-								"value": "keep-alive",
-								"name": "connection",
-								"type": "text"
-							},
-							{
-								"key": "Authorization",
-								"value": "Bearer {{authToken}}",
-								"type": "text"
-							},
-							{
-								"key": "",
-								"value": "",
-								"type": "text",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://localhost:8000/api/me",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8000",
-							"path": [
-								"api",
-								"me"
 							]
 						}
 					},
@@ -1258,11 +1091,43 @@
 			]
 		}
 	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
 	"variable": [
 		{
 			"key": "authToken",
+			"value": ""
+		},
+		{
+			"key": "BASE_URL_SERVER",
+			"value": ""
+		},
+		{
+			"key": "BASE_URL",
 			"value": "",
-			"type": "string"
+			"type": "default"
 		}
 	]
 }
