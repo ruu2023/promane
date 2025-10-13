@@ -61,7 +61,12 @@ jobs:
       # 5. Dockerイメージのビルドとプッシュ ここで dockerfile のディレクトリ指定を ./back に変更
       - name: Build and Push Docker image
         run: |
-          # --- ▼▼▼ ここから追加 ▼▼▼ ---
+          # --- ▼▼▼ ここからデバッグ用に追加 ▼▼▼ ---
+          echo "--- DEBUG: Listing all files in ./back before build ---"
+          # ./back ディレクトリの中身を再帰的に、詳細付きで全てリストアップする
+          ls -laR ./back
+          echo "-----------------------------------------------------"
+          # --- ▲▲▲ ここまでデバッグ用に追加 ▲▲▲ ---
           # ビルド用の.envファイルを ./back ディレクトリ内に生成する
           echo "APP_ENV=production" > ./back/.env
           echo "APP_KEY=${{ secrets.APP_KEY }}" >> ./back/.env
@@ -70,7 +75,7 @@ jobs:
           # ビルド時にDB接続エラーが起きるのを防ぐためのダミー設定
           echo "DB_CONNECTION=sqlite" >> ./back/.env
           echo "DB_DATABASE=:memory:" >> ./back/.env
-          # --- ▲▲▲ ここまで追加 ▲▲▲ ---
+
           export IMAGE_NAME=${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.GCP_ARTIFACT_REPOSITORY }}/${{ env.GCP_SERVICE_NAME }}:${{ github.sha }}
           docker build -t $IMAGE_NAME ./back
           docker push $IMAGE_NAME
