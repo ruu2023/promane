@@ -1,62 +1,49 @@
 <?php
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\CommentController;
+use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\TaskController;
+use App\Http\Controllers\TaskLabelController;
 use Illuminate\Support\Facades\Route;
-use App\Models\User;
-use Illuminate\Support\Facades\Hash;
 
-
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
-
+/**
+ * API Test Routes
+ */
 Route::get('/ping', function () {
     return response()->json(['pong' => true]);
 });
-
 Route::get('/error-test', function () {
     throw new Exception("テストエラー");
 });
 
+/**
+ * Authentication Routes
+*/
+Route::post('/register', [App\Http\Controllers\AuthController::class, 'register']);
+Route::post('/login', [App\Http\Controllers\AuthController::class, 'login']);
+Route::middleware('auth:sanctum')->get('/me', [App\Http\Controllers\AuthController::class, 'me']);
 
-Route::post('/register', function (Request $request) {
-    $validated = $request->validate([
-        'name' => 'required|string|max:15',
-        'email' => 'required|string|email|max:50|unique:users,email',
-        'password' => 'required|string|min:8',
-    ]);
+/**
+ * Protected Routes
+ */
+Route::middleware('auth:sanctum')->group(function () {
+    // --- Project members ---
+    Route::get('projects/{project}/members', [ProjectController::class, 'members']);
+    Route::post('projects/{project}/members', [ProjectController::class, 'addMember']);
+    Route::patch('projects/{project}/members/{user}', [ProjectController::class, 'updateMember']);
+    Route::delete('projects/{project}/members/{user}', [ProjectController::class, 'removeMember']);
 
-    $user = User::create([
-        'name' => $validated['name'],
-        'email' => $validated['email'],
-        'password' => Hash::make($validated['password']),
-    ]);
+    // --- Today's ---
+    Route::post('tasks/{task}/move-to-today', [TaskController::class, 'moveToToday']);
+    Route::get('tasks/today', [TaskController::class, 'getTodayTasks']);
 
-    $token = $user->createToken('auth_token')->plainTextToken;
+    // --- Task <-> Labels attach/detach ---
+    Route::post('tasks/{task}/labels/{label}', [TaskController::class, 'attachLabel']);
+    Route::delete('tasks/{task}/labels/{label}', [TaskController::class, 'detachLabel']);
 
-    return response()->json([
-        'token' => $token,
-        'user' => $user,
-    ]);
-});
-
-Route::post('/login', function (Request $request) {
-    $user = User::where('email', $request->email)->first();
-
-    if (! $user || ! Hash::check($request->password, $user->password)) {
-        return response()->json([
-            'message' => __('auth.failed'),
-        ], 401);
-    }
-
-    $token = $user->createToken('auth_token')->plainTextToken;
-
-    return response()->json([
-        'token' => $token,
-        'user' => $user,
-    ]);
-});
-
-Route::middleware('auth:sanctum')->get('/me', function (Request $request) {
-    return $request->user();
+    // --- ApiResources ---
+    Route::apiResource('projects', ProjectController::class);
+    Route::apiResource('projects.tasks', TaskController::class)->shallow();
+    Route::apiResource('projects.labels', TaskLabelController::class)->shallow();
+    Route::apiResource('tasks.comments', CommentController::class)->shallow();
 });
