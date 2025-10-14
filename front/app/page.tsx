@@ -1,7 +1,7 @@
 "use client"
 
-import { LearningDashboard } from "@/components/learning-dashboard"
+import { DailyTaskScreen } from "@/components/daily-task-screen"
 
 export default function Home() {
-  return <LearningDashboard />
+  return <DailyTaskScreen />
 }
