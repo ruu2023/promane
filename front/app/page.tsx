@@ -1,7 +1,7 @@
-import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
+"use client"
 
-export default async function Home() {
+import { LearningDashboard } from "@/components/learning-dashboard"
 
-  return <div>ようこそ</div>;
+export default function Home() {
+  return <LearningDashboard />
 }
