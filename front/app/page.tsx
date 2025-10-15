@@ -1,7 +1,7 @@
 "use client"
 
-import { DailyTaskScreen } from "@/components/daily-task-screen"
+import { ProjectOverview } from "@/components/project-overview"
 
 export default function Home() {
-  return <DailyTaskScreen />
+  return <ProjectOverview />
 }

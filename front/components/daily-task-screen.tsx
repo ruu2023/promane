@@ -11,6 +11,8 @@ export interface Task {
   name: string
   projectId: string
   duration: number // in minutes
+  dueDate?: string
+  tags?: string[]
 }
 
 export interface Project {
@@ -30,12 +32,54 @@ const initialProjects: Project[] = [
     name: "金の文法",
     color: "oklch(0.6 0.15 145)", // Green
     tasks: [
-      { id: "t1", name: "Chapter 1: Basic Grammar", projectId: "1", duration: 30 },
-      { id: "t2", name: "Chapter 2: Particles", projectId: "1", duration: 45 },
-      { id: "t3", name: "Chapter 3: Verb Conjugation", projectId: "1", duration: 60 },
-      { id: "t4", name: "Practice Exercises Set A", projectId: "1", duration: 30 },
-      { id: "t5", name: "Practice Exercises Set B", projectId: "1", duration: 30 },
-      { id: "t6", name: "Review and Quiz", projectId: "1", duration: 45 },
+      {
+        id: "t1",
+        name: "Chapter 1: Basic Grammar",
+        projectId: "1",
+        duration: 30,
+        dueDate: "2025-10-20",
+        tags: ["grammar", "basics"],
+      },
+      {
+        id: "t2",
+        name: "Chapter 2: Particles",
+        projectId: "1",
+        duration: 45,
+        dueDate: "2025-10-22",
+        tags: ["grammar", "particles"],
+      },
+      {
+        id: "t3",
+        name: "Chapter 3: Verb Conjugation",
+        projectId: "1",
+        duration: 60,
+        dueDate: "2025-10-25",
+        tags: ["grammar", "verbs"],
+      },
+      {
+        id: "t4",
+        name: "Practice Exercises Set A",
+        projectId: "1",
+        duration: 30,
+        dueDate: "2025-10-27",
+        tags: ["practice"],
+      },
+      {
+        id: "t5",
+        name: "Practice Exercises Set B",
+        projectId: "1",
+        duration: 30,
+        dueDate: "2025-10-29",
+        tags: ["practice"],
+      },
+      {
+        id: "t6",
+        name: "Review and Quiz",
+        projectId: "1",
+        duration: 45,
+        dueDate: "2025-10-31",
+        tags: ["review", "quiz"],
+      },
     ],
   },
   {
@@ -43,11 +87,46 @@ const initialProjects: Project[] = [
     name: "React Advanced Patterns",
     color: "oklch(0.6 0.2 260)", // Blue
     tasks: [
-      { id: "t7", name: "Compound Components Pattern", projectId: "2", duration: 45 },
-      { id: "t8", name: "Render Props Pattern", projectId: "2", duration: 45 },
-      { id: "t9", name: "Higher Order Components", projectId: "2", duration: 60 },
-      { id: "t10", name: "Custom Hooks Deep Dive", projectId: "2", duration: 50 },
-      { id: "t11", name: "Context API Best Practices", projectId: "2", duration: 40 },
+      {
+        id: "t7",
+        name: "Compound Components Pattern",
+        projectId: "2",
+        duration: 45,
+        dueDate: "2025-10-18",
+        tags: ["patterns", "components"],
+      },
+      {
+        id: "t8",
+        name: "Render Props Pattern",
+        projectId: "2",
+        duration: 45,
+        dueDate: "2025-10-20",
+        tags: ["patterns", "props"],
+      },
+      {
+        id: "t9",
+        name: "Higher Order Components",
+        projectId: "2",
+        duration: 60,
+        dueDate: "2025-10-23",
+        tags: ["patterns", "hoc"],
+      },
+      {
+        id: "t10",
+        name: "Custom Hooks Deep Dive",
+        projectId: "2",
+        duration: 50,
+        dueDate: "2025-10-25",
+        tags: ["hooks", "advanced"],
+      },
+      {
+        id: "t11",
+        name: "Context API Best Practices",
+        projectId: "2",
+        duration: 40,
+        dueDate: "2025-10-28",
+        tags: ["context", "state"],
+      },
     ],
   },
   {
@@ -55,10 +134,38 @@ const initialProjects: Project[] = [
     name: "Machine Learning Fundamentals",
     color: "oklch(0.65 0.2 40)", // Orange
     tasks: [
-      { id: "t12", name: "Linear Regression Theory", projectId: "3", duration: 60 },
-      { id: "t13", name: "Gradient Descent Algorithm", projectId: "3", duration: 45 },
-      { id: "t14", name: "Neural Networks Basics", projectId: "3", duration: 90 },
-      { id: "t15", name: "Backpropagation Explained", projectId: "3", duration: 60 },
+      {
+        id: "t12",
+        name: "Linear Regression Theory",
+        projectId: "3",
+        duration: 60,
+        dueDate: "2025-10-19",
+        tags: ["theory", "regression"],
+      },
+      {
+        id: "t13",
+        name: "Gradient Descent Algorithm",
+        projectId: "3",
+        duration: 45,
+        dueDate: "2025-10-22",
+        tags: ["algorithms", "optimization"],
+      },
+      {
+        id: "t14",
+        name: "Neural Networks Basics",
+        projectId: "3",
+        duration: 90,
+        dueDate: "2025-10-26",
+        tags: ["neural-networks", "basics"],
+      },
+      {
+        id: "t15",
+        name: "Backpropagation Explained",
+        projectId: "3",
+        duration: 60,
+        dueDate: "2025-10-30",
+        tags: ["neural-networks", "theory"],
+      },
     ],
   },
 ]
@@ -71,6 +178,8 @@ export function DailyTaskScreen() {
       name: "Chapter 1: Basic Grammar",
       projectId: "1",
       duration: 30,
+      dueDate: "2025-10-20",
+      tags: ["grammar", "basics"],
       completed: false,
     },
     {
@@ -78,6 +187,8 @@ export function DailyTaskScreen() {
       name: "Compound Components Pattern",
       projectId: "2",
       duration: 45,
+      dueDate: "2025-10-18",
+      tags: ["patterns", "components"],
       completed: false,
     },
   ])
@@ -108,6 +219,8 @@ export function DailyTaskScreen() {
       name: task.name,
       projectId: task.projectId,
       duration: task.duration,
+      dueDate: task.dueDate,
+      tags: task.tags,
     }
 
     setProjects((prev) =>
@@ -119,6 +232,48 @@ export function DailyTaskScreen() {
 
   const handleToggleComplete = (taskId: string) => {
     setPlaylist((prev) => prev.map((task) => (task.id === taskId ? { ...task, completed: !task.completed } : task)))
+  }
+
+  const handleCreateTask = (taskData: Omit<Task, "id">) => {
+    const newTask: Task = {
+      ...taskData,
+      id: `t${Date.now()}`, // Generate unique ID
+    }
+
+    setProjects((prev) =>
+      prev.map((project) =>
+        project.id === newTask.projectId ? { ...project, tasks: [...project.tasks, newTask] } : project,
+      ),
+    )
+  }
+
+  const handleEditTask = (updatedTask: Task) => {
+    setProjects((prev) =>
+      prev.map((project) =>
+        project.id === updatedTask.projectId
+          ? {
+              ...project,
+              tasks: project.tasks.map((task) => (task.id === updatedTask.id ? updatedTask : task)),
+            }
+          : project,
+      ),
+    )
+
+    // Also update in playlist if it exists there
+    setPlaylist((prev) =>
+      prev.map((task) =>
+        task.id === updatedTask.id
+          ? {
+              ...task,
+              name: updatedTask.name,
+              projectId: updatedTask.projectId,
+              duration: updatedTask.duration,
+              dueDate: updatedTask.dueDate,
+              tags: updatedTask.tags,
+            }
+          : task,
+      ),
+    )
   }
 
   return (
@@ -137,7 +292,12 @@ export function DailyTaskScreen() {
       <div className="container mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left Column - Task Candidates */}
-          <TaskCandidates projects={projects} onAddTask={handleAddToPlaylist} />
+          <TaskCandidates
+            projects={projects}
+            onAddTask={handleAddToPlaylist}
+            onEditTask={handleEditTask}
+            onCreateTask={handleCreateTask}
+          />
 
           {/* Right Column - Today's Playlist */}
           <TodaysPlaylist
