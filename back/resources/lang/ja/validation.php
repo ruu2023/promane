@@ -10,6 +10,9 @@ return [
     'min' => [
         'string' => ':attributeは少なくとも :min 文字で入力してください。',
     ],
+    'max' => [
+        'string' => ':attributeは :max 文字以下で入力してください。',
+    ],
     'attributes' => [
         'email' => 'メールアドレス',
         'password' => 'パスワード',
