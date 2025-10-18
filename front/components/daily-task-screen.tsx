@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { TreesIcon } from 'lucide-react';
 import { TaskCandidates } from '@/components/task-candidates';
 import { TodaysPlaylist } from '@/components/todays-playlist';
-import { ViewName } from '@/app/page';
+import { useRouter } from 'next/navigation';
 
 export interface Task {
   id: string;
@@ -172,10 +172,10 @@ const initialProjects: Project[] = [
 ];
 
 type Props = {
-  onChangeView: (name: ViewName) => void;
+  // onChangeView: (name: ViewName) => void;
 };
 
-export function DailyTaskScreen({ onChangeView }: Props) {
+export function DailyTaskScreen({}: Props) {
   const [projects, setProjects] = useState<Project[]>(initialProjects);
   const [playlist, setPlaylist] = useState<PlaylistTask[]>([
     {
@@ -289,13 +289,15 @@ export function DailyTaskScreen({ onChangeView }: Props) {
     );
   };
 
+  const router = useRouter();
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <h1 className="text-2xl font-semibold text-foreground">My Trees: Today&apos;s Focus</h1>
-          <Button onClick={() => onChangeView('ProjectOverview')} variant="ghost" size="icon">
+          <Button onClick={() => router.push('/')} variant="ghost" size="icon">
             <TreesIcon className="h-5 w-5 text-[var(--forest-accent)]" />
           </Button>
         </div>

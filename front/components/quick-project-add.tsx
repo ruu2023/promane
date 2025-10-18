@@ -57,36 +57,6 @@ export function QuickProjectAdd({ onAddProject, projectErrors }: QuickTaskAddPro
     });
   };
 
-  // // optimistic
-  // const [optimisticProject, addOptimisticProject] = useOptimistic(
-  //   projectProps,
-  //   (curr, newProject: ProjectType) => {
-  //     return [newProject, ...curr.slice(0, -1)];
-  //   }
-  // );
-
-  // const handleProjectCreate = async () => {
-  //   const tmpBody = {
-  //     name: 'nextプロジェクト2025-10-17',
-  //     description: 'next から送信',
-  //     start_at: '2025-10-01',
-  //     end_at: '2025-11-01',
-  //   };
-
-  //   const tmpProject = {
-  //     ...tmpBody,
-  //     id: Date.now(),
-  //   };
-
-  //   addOptimisticProject(tmpProject);
-  //   const res = await createProject(tmpBody);
-  //   if (res.success) {
-  //     console.log('ok');
-  //     return;
-  //   }
-  //   console.log('NG');
-  // };
-
   return (
     <div className="bg-muted/50 rounded-lg p-4 border border-border">
       <h3 className="text-sm font-semibold text-foreground mb-3">Quick Project Add</h3>

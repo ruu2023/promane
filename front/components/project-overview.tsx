@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useOptimistic, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { TreesIcon } from 'lucide-react';
 import {
@@ -13,7 +14,7 @@ import { Progress } from '@/components/ui/progress';
 import { QuickTaskAdd } from '@/components/quick-task-add';
 import { TaskCard } from '@/components/task-card';
 import { createProject } from '@/actions/projectActions';
-import { postProjectInput } from '@/types/project';
+import { postProjectInput, Project } from '@/types/project';
 import { QuickProjectAdd } from './quick-project-add';
 import { ViewName } from '@/app/page';
 
@@ -25,7 +26,7 @@ export interface Task {
   tags: string[];
 }
 
-export interface Project {
+export interface ProjectType {
   id: string;
   name: string;
   color: string;
@@ -33,7 +34,7 @@ export interface Project {
   tasks: Task[];
 }
 
-const initialProjects: Project[] = [
+const initialProjects: ProjectType[] = [
   {
     id: '1',
     name: '金の文法',
@@ -174,11 +175,11 @@ function calculateDaysLeft(goalDate: string): number {
 }
 
 type Props = {
-  onChangeView: (name: ViewName) => void;
+  // onChangeView: (name: ViewName) => void;
 };
 
-export function ProjectOverview({ onChangeView }: Props) {
-  const [projects, setProjects] = useState<Project[]>(initialProjects);
+export function ProjectOverview({}: Props) {
+  const [projects, setProjects] = useState<ProjectType[]>(initialProjects);
 
   const handleAddTask = (projectId: string, taskData: Omit<Task, 'id' | 'projectId'>) => {
     const newTask: Task = {
@@ -194,10 +195,42 @@ export function ProjectOverview({ onChangeView }: Props) {
     );
   };
 
-  const getProjectTags = (project: Project): string[] => {
+  const getProjectTags = (project: ProjectType): string[] => {
     const allTags = project.tasks.flatMap((task) => task.tags);
     return Array.from(new Set(allTags));
   };
+
+  // 楽観的 UI 更新
+
+  // optimistic
+  // const [optimisticProject, addOptimisticProject] = useOptimistic(
+  //   projectProps,
+  //   (curr, newProject: Project) => {
+  //     return [newProject, ...curr.slice(0, -1)];
+  //   }
+  // );
+
+  // const handleProjectCreate = async () => {
+  //   const tmpBody = {
+  //     name: 'nextプロジェクト2025-10-17',
+  //     description: 'next から送信',
+  //     start_at: '2025-10-01',
+  //     end_at: '2025-11-01',
+  //   };
+
+  //   const tmpProject = {
+  //     ...tmpBody,
+  //     id: Date.now(),
+  //   };
+
+  //   addOptimisticProject(tmpProject);
+  //   const res = await createProject(tmpBody);
+  //   if (res.success) {
+  //     console.log('ok');
+  //     return;
+  //   }
+  //   console.log('NG');
+  // };
 
   const [projectErrors, setProjectErrors] = useState({});
 
@@ -212,13 +245,15 @@ export function ProjectOverview({ onChangeView }: Props) {
     }
   };
 
+  const router = useRouter();
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <h1 className="text-2xl font-semibold text-foreground">My Forest: Project Overview</h1>
-          <Button onClick={() => onChangeView('DailyTaskScreen')} variant="ghost" size="icon">
+          <Button onClick={() => router.push('/daily')} variant="ghost" size="icon">
             <TreesIcon className="h-5 w-5 text-[var(--forest-accent)]" />
           </Button>
         </div>
