@@ -16,7 +16,8 @@ import { TaskCard } from '@/components/task-card';
 import { createProject } from '@/actions/project-actions';
 import { postProjectInput, ProjectList } from '@/types/project';
 import { QuickProjectAdd } from './quick-project-add';
-import { PaginatedData } from '@/types/common';
+import { PaginatedData, ProjectErrors } from '@/types/common';
+import { format, startOfToday } from 'date-fns';
 
 export interface Task {
   id: string;
@@ -179,7 +180,6 @@ type Props = {
 };
 
 export function ProjectOverview({ projectsPaginated }: Props) {
-  console.log(projectsPaginated);
   const [mockProjects, setMockProjects] = useState<ProjectType[]>(initialMockProjects);
 
   const handleAddTask = (projectId: string, taskData: Omit<Task, 'id' | 'projectId'>) => {
@@ -209,43 +209,57 @@ export function ProjectOverview({ projectsPaginated }: Props) {
     }
   );
 
-  // const handleProjectCreate = async () => {
-  //   const tmpBody = {
-  //     name: 'nextプロジェクト2025-10-17',
-  //     description: 'next から送信',
-  //     start_at: '2025-10-01',
-  //     end_at: '2025-11-01',
-  //   };
+  const [projectErrors, setProjectErrors] = useState<ProjectErrors>({});
 
-  //   const tmpProject = {
-  //     ...tmpBody,
-  //     id: 0,
-  //     updated_at: '2000-10-10',
-  //     created_at: '2000-10-10',
-  //     users: 1,
-  //   };
+  const handleProjectCreate = async (formData: FormData) => {
+    setProjectErrors({});
+    const name = formData.get('name') as string;
+    const description = formData.get('description') as string;
+    const end_at = formData.get('end_at') as string;
 
-  //   addOptimisticProject(tmpProject);
-  //   const res = await createProject(tmpBody);
-  //   if (res.success) {
-  //     console.log('ok');
-  //     return;
-  //   }
-  //   console.log('NG');
-  // };
+    // For UX validation
+    if (!name) {
+      setProjectErrors({ name: ['プロジェクト名を入力してください'] });
+      return;
+    }
 
-  const [projectErrors, setProjectErrors] = useState({});
+    const tmpBody = {
+      name,
+      description,
+      start_at: format(startOfToday(), 'yyyy-MM-dd HH:mm:ss'),
+      end_at,
+    };
 
-  const handleAddProject = async (body: postProjectInput) => {
-    const res = await createProject(body);
+    const tmpProject = {
+      ...tmpBody,
+      id: -Date.now(),
+      updated_at: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      task_count: 0,
+    };
+
+    addOptimisticProject(tmpProject);
+    const res = await createProject(tmpBody);
     if (res.success) {
-      alert(`できたんご。${res.data.created_at}`);
-    } else {
-      if (res.errors) {
-        setProjectErrors(res.errors);
-      }
+      console.log('ok');
+      return;
+    }
+    console.log(res);
+    if (res.errors) {
+      setProjectErrors(res.errors);
     }
   };
+
+  // const handleAddProject = async (body: postProjectInput) => {
+  //   const res = await createProject(body);
+  //   if (res.success) {
+  //     alert(`できたんご。${res.data.created_at}`);
+  //   } else {
+  //     if (res.errors) {
+  //       setProjectErrors(res.errors);
+  //     }
+  //   }
+  // };
 
   const router = useRouter();
 
@@ -261,8 +275,13 @@ export function ProjectOverview({ projectsPaginated }: Props) {
         </div>
       </header>
 
+      {/* 楽観的UI更新テスト */}
+      {optimisticProject.map((project) => (
+        <p key={project.id}>{project.name}</p>
+      ))}
+
       {/* Project Add */}
-      <QuickProjectAdd onAddProject={handleAddProject} projectErrors={projectErrors} />
+      <QuickProjectAdd onAddProject={handleProjectCreate} projectErrors={projectErrors} />
 
       {/* Project List */}
       <div className="container mx-auto px-6 py-8 max-w-6xl">

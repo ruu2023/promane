@@ -13,9 +13,12 @@ return [
     'max' => [
         'string' => ':attributeは :max 文字以下で入力してください。',
     ],
+    'after_or_equal' => ':attribute には、:date 以降の日付を指定してください。',
     'attributes' => [
         'email' => 'メールアドレス',
         'password' => 'パスワード',
         'name' => '名前',
+        'start_at' => '今日',
+        'end_at'   => '終了日',
     ],
 ];

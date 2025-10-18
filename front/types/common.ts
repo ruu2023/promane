@@ -33,3 +33,5 @@ export type ErrorResponse = {
   errors?: { [key: string]: string[] };
 };
 export type ApiResponse<T> = SuccessResponse<T> | ErrorResponse;
+
+export type ProjectErrors = { [key: string]: string[] };
