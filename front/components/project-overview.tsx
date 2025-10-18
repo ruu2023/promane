@@ -13,10 +13,10 @@ import {
 import { Progress } from '@/components/ui/progress';
 import { QuickTaskAdd } from '@/components/quick-task-add';
 import { TaskCard } from '@/components/task-card';
-import { createProject } from '@/actions/projectActions';
-import { postProjectInput, Project } from '@/types/project';
+import { createProject } from '@/actions/project-actions';
+import { postProjectInput, ProjectList } from '@/types/project';
 import { QuickProjectAdd } from './quick-project-add';
-import { ViewName } from '@/app/page';
+import { PaginatedData } from '@/types/common';
 
 export interface Task {
   id: string;
@@ -34,7 +34,7 @@ export interface ProjectType {
   tasks: Task[];
 }
 
-const initialProjects: ProjectType[] = [
+const initialMockProjects: ProjectType[] = [
   {
     id: '1',
     name: '金の文法',
@@ -175,11 +175,12 @@ function calculateDaysLeft(goalDate: string): number {
 }
 
 type Props = {
-  // onChangeView: (name: ViewName) => void;
+  projectsPaginated: PaginatedData<ProjectList>;
 };
 
-export function ProjectOverview({}: Props) {
-  const [projects, setProjects] = useState<ProjectType[]>(initialProjects);
+export function ProjectOverview({ projectsPaginated }: Props) {
+  console.log(projectsPaginated);
+  const [mockProjects, setMockProjects] = useState<ProjectType[]>(initialMockProjects);
 
   const handleAddTask = (projectId: string, taskData: Omit<Task, 'id' | 'projectId'>) => {
     const newTask: Task = {
@@ -188,7 +189,7 @@ export function ProjectOverview({}: Props) {
       projectId,
     };
 
-    setProjects((prev) =>
+    setMockProjects((prev) =>
       prev.map((project) =>
         project.id === projectId ? { ...project, tasks: [...project.tasks, newTask] } : project
       )
@@ -201,14 +202,12 @@ export function ProjectOverview({}: Props) {
   };
 
   // 楽観的 UI 更新
-
-  // optimistic
-  // const [optimisticProject, addOptimisticProject] = useOptimistic(
-  //   projectProps,
-  //   (curr, newProject: Project) => {
-  //     return [newProject, ...curr.slice(0, -1)];
-  //   }
-  // );
+  const [optimisticProject, addOptimisticProject] = useOptimistic(
+    projectsPaginated.data,
+    (curr, newProject: ProjectList) => {
+      return [newProject, ...curr.slice(0, -1)];
+    }
+  );
 
   // const handleProjectCreate = async () => {
   //   const tmpBody = {
@@ -220,7 +219,10 @@ export function ProjectOverview({}: Props) {
 
   //   const tmpProject = {
   //     ...tmpBody,
-  //     id: Date.now(),
+  //     id: 0,
+  //     updated_at: '2000-10-10',
+  //     created_at: '2000-10-10',
+  //     users: 1,
   //   };
 
   //   addOptimisticProject(tmpProject);
@@ -265,7 +267,7 @@ export function ProjectOverview({}: Props) {
       {/* Project List */}
       <div className="container mx-auto px-6 py-8 max-w-6xl">
         <Accordion type="single" collapsible className="space-y-4">
-          {projects.map((project) => {
+          {mockProjects.map((project) => {
             const completedTasks = 0; // You can track this separately
             const totalTasks = project.tasks.length;
             const progressPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
