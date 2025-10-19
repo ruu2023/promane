@@ -11,7 +11,7 @@ import { Progress } from '@/components/ui/progress';
 import { QuickTaskAdd } from '@/components/quick-task-add';
 import { TaskCard } from '@/components/task-card';
 import { createProject } from '@/actions/project-actions';
-import { postProjectInput, ProjectList } from '@/types/project';
+import { ProjectList } from '@/types/project';
 import { QuickProjectAdd } from './quick-project-add';
 import { PaginatedData, ProjectErrors } from '@/types/common';
 import { format, parseISO, startOfToday } from 'date-fns';
@@ -248,28 +248,40 @@ export function ProjectOverview({ projectsPaginated, currentUser }: Props) {
   /**
    * Task
    */
-  const [hasFetched, setHasFetched] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [tasksPerPage, setTasksPerPage] = useState(20);
   // 楽観的 UI 更新 Tasks
-  const [tasks, setTasks] = useState<TaskList[]>([]);
-  const [optimisticTasks, addOptimisticTasks] = useOptimistic(tasks, (curr, newTask: TaskList) => {
-    if (curr.length > tasksPerPage) {
-      return [newTask, ...curr.slice(0, -1)];
-    } else {
-      return [newTask, ...curr];
+  const [tasksByProject, setTasksByProject] = useState<Record<number, TaskList[]>>({});
+  const [optimisticTasks, addOptimisticTasks] = useOptimistic(
+    tasksByProject,
+    (
+      currentTasksByProject: Record<number, TaskList[]>,
+      { projectId, newTask }: { projectId: number; newTask: TaskList }
+    ) => {
+      const currTasks = currentTasksByProject[projectId] || [];
+
+      let newTasks: TaskList[];
+      if (currTasks.length > tasksPerPage) {
+        newTasks = [newTask, ...currTasks.slice(0, -1)];
+      } else {
+        newTasks = [newTask, ...currTasks];
+      }
+      return {
+        ...currentTasksByProject,
+        [projectId]: newTasks,
+      };
     }
-  });
+  );
 
   const handleTriggerClick = async (projectId: number) => {
-    if (hasFetched || isLoading) return;
+    const hasProjectFetched = Object.keys(tasksByProject).includes(String(projectId));
+    if (hasProjectFetched || isLoading) return;
     setIsLoading(true);
-    setHasFetched(true);
 
     const taskRes = await getTasks(projectId);
     if (!taskRes.success) throw new Error('タスクの取得に失敗しました');
     setTasksPerPage(taskRes.data.per_page);
-    setTasks(taskRes.data.data);
+    setTasksByProject((prev) => ({ ...prev, [projectId]: taskRes.data.data }));
     setIsLoading(false);
   };
 
@@ -310,11 +322,14 @@ export function ProjectOverview({ projectsPaginated, currentUser }: Props) {
       created_by: currentUser.id,
     };
 
-    addOptimisticTasks(task);
+    addOptimisticTasks({ projectId, newTask: task });
 
     const res = await createTask(projectId, body);
     if (res.success) {
-      setTasks((prev) => [res.data, ...prev]);
+      setTasksByProject((prev) => ({
+        ...prev,
+        [projectId]: [res.data, ...prev[projectId]],
+      }));
       return;
     }
     if (res.errors) {
@@ -338,6 +353,7 @@ export function ProjectOverview({ projectsPaginated, currentUser }: Props) {
             const daysLeft = calculateDaysLeft(endDate);
             const formattedEndDate = format(endDate, 'yyyy-MM-dd');
             const availableTags = getProjectTags(project);
+            const tasks = optimisticTasks[project.id] ?? [];
 
             return (
               <AccordionItem
@@ -383,21 +399,22 @@ export function ProjectOverview({ projectsPaginated, currentUser }: Props) {
                       defaultDueDate={new Date()}
                       availableTags={availableTags}
                       onAddTask={(formData) => handleAddTask(project.id, formData)}
+                      taskErrors={taskErrors}
                     />
                   </div>
 
                   {/* Task Cards Grid */}
                   {isLoading && <TaskSkeleton />}
 
-                  {!isLoading && hasFetched && optimisticTasks.length === 0 && (
+                  {!isLoading && tasks.length === 0 && (
                     <div className="text-center py-8 text-muted-foreground">
                       <p>No tasks yet. Add your first task above!</p>
                     </div>
                   )}
 
-                  {!isLoading && optimisticTasks.length > 0 && (
+                  {!isLoading && tasks.length > 0 && (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {optimisticTasks.map((task) => (
+                      {tasks.map((task) => (
                         <TaskCard key={task.id} task={task} projectColor={'#000'} />
                       ))}
                     </div>

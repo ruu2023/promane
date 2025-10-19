@@ -13,14 +13,21 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { TagInput } from '@/components/tag-input';
 import { InputErrorPopover } from './input-error-popover';
+import { TaskErrors } from '@/types/task';
 
 interface QuickTaskAddProps {
   defaultDueDate: Date;
   availableTags?: string[];
   onAddTask: (formData: FormData) => void;
+  taskErrors: TaskErrors;
 }
 
-export function QuickTaskAdd({ defaultDueDate, availableTags = [], onAddTask }: QuickTaskAddProps) {
+export function QuickTaskAdd({
+  defaultDueDate,
+  availableTags = [],
+  onAddTask,
+  taskErrors,
+}: QuickTaskAddProps) {
   const [taskName, setTaskName] = useState('');
   const [dueDate, setDueDate] = useState<Date>(defaultDueDate);
   const [tags, setTags] = useState<string[]>([]);
@@ -33,7 +40,7 @@ export function QuickTaskAdd({ defaultDueDate, availableTags = [], onAddTask }: 
           {/* Project id */}
 
           {/* Task Name */}
-          <div className="md:col-span-1">
+          <div className="md:col-span-1 relative">
             <Label htmlFor="task-name" className="text-xs text-muted-foreground">
               Task Name
             </Label>
@@ -44,6 +51,7 @@ export function QuickTaskAdd({ defaultDueDate, availableTags = [], onAddTask }: 
               className="mt-1"
               name="name"
             />
+            <InputErrorPopover message={taskErrors?.name?.[0]} />
           </div>
           {/* Task description */}
           <div className="md:col-span-1 relative">
@@ -56,11 +64,11 @@ export function QuickTaskAdd({ defaultDueDate, availableTags = [], onAddTask }: 
               className="mt-1"
               name="description"
             />
-            {/* <InputErrorPopover message={projectErrors?.description?.[0]} /> */}
+            <InputErrorPopover message={taskErrors?.description?.[0]} />
           </div>
 
           {/* Due Date */}
-          <div>
+          <div className="relative">
             <Label htmlFor="due-date" className="text-xs text-muted-foreground">
               Due Date
             </Label>
@@ -86,6 +94,7 @@ export function QuickTaskAdd({ defaultDueDate, availableTags = [], onAddTask }: 
                 />
               </PopoverContent>
             </Popover>
+            <InputErrorPopover message={taskErrors?.end_at?.[0]} />
           </div>
 
           <div>
