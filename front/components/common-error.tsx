@@ -8,7 +8,7 @@ interface ComonErrorProps {
   title?: string;
 }
 
-export function ComonError({ title = '問題が発生しました', message }: ComonErrorProps) {
+export function CommonError({ title = '問題が発生しました', message }: ComonErrorProps) {
   return (
     <Alert variant="destructive">
       <AlertTriangle className="h-4 w-4" />

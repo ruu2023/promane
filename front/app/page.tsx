@@ -1,12 +1,16 @@
-import { getProject } from '@/actions/project-actions';
+import Header from '@/components/header';
+import Link from 'next/link';
 
-import { ProjectOverview } from '@/components/project-overview';
-import { ComonError } from '@/components/common-error';
-
-export default async function Home() {
-  const res = await getProject();
-  if (!res.success) {
-    return <ComonError message={res.message} />;
-  }
-  return <ProjectOverview projectsPaginated={res.data} />;
+export default function Home() {
+  return (
+    <>
+      <Header />
+      <p>
+        <Link href={'./login'}>ログインページへ</Link>
+      </p>
+      <p>
+        <Link href={'./register'}>会員登録</Link>
+      </p>
+    </>
+  );
 }

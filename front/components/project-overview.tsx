@@ -1,9 +1,6 @@
 'use client';
 
-import { useOptimistic, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { TreesIcon } from 'lucide-react';
+import { Suspense, useOptimistic, useState } from 'react';
 import {
   Accordion,
   AccordionContent,
@@ -17,7 +14,11 @@ import { createProject } from '@/actions/project-actions';
 import { postProjectInput, ProjectList } from '@/types/project';
 import { QuickProjectAdd } from './quick-project-add';
 import { PaginatedData, ProjectErrors } from '@/types/common';
-import { format, startOfToday } from 'date-fns';
+import { format, parseISO, startOfToday } from 'date-fns';
+import { getTasks } from '@/actions/task-actions';
+import { TaskErrors, TaskList, TaskPriority, TaskStatus } from '@/types/task';
+import { ProjectSkeleton } from './project-skelton';
+import { TaskSkeleton } from './task-skelton';
 
 export interface Task {
   id: string;
@@ -167,9 +168,8 @@ const initialMockProjects: ProjectType[] = [
   },
 ];
 
-function calculateDaysLeft(goalDate: string): number {
+function calculateDaysLeft(goal: Date): number {
   const today = new Date();
-  const goal = new Date(goalDate);
   const diffTime = goal.getTime() - today.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   return diffDays;
@@ -182,27 +182,14 @@ type Props = {
 export function ProjectOverview({ projectsPaginated }: Props) {
   const [mockProjects, setMockProjects] = useState<ProjectType[]>(initialMockProjects);
 
-  const handleAddTask = (projectId: string, taskData: Omit<Task, 'id' | 'projectId'>) => {
-    const newTask: Task = {
-      ...taskData,
-      id: `t${Date.now()}`,
-      projectId,
-    };
-
-    setMockProjects((prev) =>
-      prev.map((project) =>
-        project.id === projectId ? { ...project, tasks: [...project.tasks, newTask] } : project
-      )
-    );
+  const getProjectTags = (project: ProjectList): string[] => {
+    return ['tagA', 'tagB'];
+    // const allTags = project.tasks.flatMap((task) => task.tags);
+    // return Array.from(new Set(allTags));
   };
 
-  const getProjectTags = (project: ProjectType): string[] => {
-    const allTags = project.tasks.flatMap((task) => task.tags);
-    return Array.from(new Set(allTags));
-  };
-
-  // 楽観的 UI 更新
-  const [optimisticProject, addOptimisticProject] = useOptimistic(
+  // 楽観的 UI 更新 Project
+  const [optimisticProjects, addOptimisticProjects] = useOptimistic(
     projectsPaginated.data,
     (curr, newProject: ProjectList) => {
       return [newProject, ...curr.slice(0, -1)];
@@ -211,6 +198,45 @@ export function ProjectOverview({ projectsPaginated }: Props) {
 
   const [projectErrors, setProjectErrors] = useState<ProjectErrors>({});
 
+  const [taskErrors, setTaskErrors] = useState<TaskErrors>({});
+  const handleAddTask = (formData: FormData) => {
+    setTaskErrors({});
+    const name = formData.get('name') as string;
+    const description = formData.get('description') as string;
+    const end_at = formData.get('end_at') as string;
+
+    // For UX validation
+    if (!name.trim()) {
+      setProjectErrors({ name: ['プロジェクト名を入力してください'] });
+      return;
+    }
+
+    const body = {
+      name,
+      description,
+      status: 'in_progress' as TaskStatus,
+      priority: 'low' as TaskPriority,
+      start_at: format(startOfToday(), 'yyyy-MM-dd HH:mm:ss'),
+      end_at,
+      assigned_to: null,
+    };
+
+    const task = {
+      ...body,
+      id: -Date.now(),
+      updated_at: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      creator: {},
+      assignee: null,
+      labels: [],
+      project_id: 1,
+      is_today: false,
+      created_by: -Date.now(),
+    };
+
+    // addOptimisticTasks(task);
+  };
+
   const handleProjectCreate = async (formData: FormData) => {
     setProjectErrors({});
     const name = formData.get('name') as string;
@@ -218,28 +244,28 @@ export function ProjectOverview({ projectsPaginated }: Props) {
     const end_at = formData.get('end_at') as string;
 
     // For UX validation
-    if (!name) {
+    if (!name.trim()) {
       setProjectErrors({ name: ['プロジェクト名を入力してください'] });
       return;
     }
 
-    const tmpBody = {
+    const body = {
       name,
       description,
       start_at: format(startOfToday(), 'yyyy-MM-dd HH:mm:ss'),
       end_at,
     };
 
-    const tmpProject = {
-      ...tmpBody,
+    const project = {
+      ...body,
       id: -Date.now(),
       updated_at: new Date().toISOString(),
       created_at: new Date().toISOString(),
-      task_count: 0,
+      tasks_count: 0,
     };
 
-    addOptimisticProject(tmpProject);
-    const res = await createProject(tmpBody);
+    addOptimisticProjects(project);
+    const res = await createProject(body);
     if (res.success) {
       console.log('ok');
       return;
@@ -250,56 +276,48 @@ export function ProjectOverview({ projectsPaginated }: Props) {
     }
   };
 
-  // const handleAddProject = async (body: postProjectInput) => {
-  //   const res = await createProject(body);
-  //   if (res.success) {
-  //     alert(`できたんご。${res.data.created_at}`);
-  //   } else {
-  //     if (res.errors) {
-  //       setProjectErrors(res.errors);
-  //     }
-  //   }
-  // };
+  // 楽観的 UI 更新 Tasks
+  const [tasks, setTasks] = useState<TaskList[]>([]);
+  const [optimisticTasks, addOptimisticTasks] = useOptimistic(
+    tasks,
+    (curr, newProject: TaskList) => {
+      return [newProject, ...curr.slice(0, -1)];
+    }
+  );
 
-  const router = useRouter();
+  const handleTriggerClick = async (projectId: number) => {
+    const taskRes = await getTasks(projectId);
+    if (!taskRes.success) throw new Error('タスクの取得に失敗しました');
+    setTasks(taskRes.data.data);
+  };
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border">
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-semibold text-foreground">My Forest: Project Overview</h1>
-          <Button onClick={() => router.push('/daily')} variant="ghost" size="icon">
-            <TreesIcon className="h-5 w-5 text-[var(--forest-accent)]" />
-          </Button>
-        </div>
-      </header>
-
-      {/* 楽観的UI更新テスト */}
-      {optimisticProject.map((project) => (
-        <p key={project.id}>{project.name}</p>
-      ))}
-
       {/* Project Add */}
       <QuickProjectAdd onAddProject={handleProjectCreate} projectErrors={projectErrors} />
 
       {/* Project List */}
       <div className="container mx-auto px-6 py-8 max-w-6xl">
         <Accordion type="single" collapsible className="space-y-4">
-          {mockProjects.map((project) => {
+          {optimisticProjects.map((project) => {
             const completedTasks = 0; // You can track this separately
-            const totalTasks = project.tasks.length;
+            const totalTasks = project.tasks_count;
             const progressPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
-            const daysLeft = calculateDaysLeft(project.goalDate);
+            const endDate = project.end_at ? parseISO(project.end_at) : new Date();
+            const daysLeft = calculateDaysLeft(endDate);
+            const formattedEndDate = format(endDate, 'yyyy-MM-dd');
             const availableTags = getProjectTags(project);
 
             return (
               <AccordionItem
                 key={project.id}
-                value={project.id}
+                value={String(project.id)}
                 className="border border-border rounded-lg bg-card"
               >
-                <AccordionTrigger className="px-6 py-4 hover:no-underline">
+                <AccordionTrigger
+                  onClick={() => handleTriggerClick(project.id)}
+                  className="px-6 py-4 hover:no-underline"
+                >
                   <div className="flex items-center justify-between w-full pr-4">
                     <div className="flex-1 text-left">
                       {/* Project Name */}
@@ -317,7 +335,7 @@ export function ProjectOverview({ projectsPaginated }: Props) {
                     {/* Goal Date and Days Left */}
                     <div className="flex items-center gap-8 ml-8">
                       <div className="text-right">
-                        <p className="text-sm text-muted-foreground">Goal: {project.goalDate}</p>
+                        <p className="text-sm text-muted-foreground">Goal: {formattedEndDate}</p>
                       </div>
                       <div className="text-right min-w-[120px]">
                         <p className="text-3xl font-bold text-[var(--forest-accent)]">{daysLeft}</p>
@@ -332,24 +350,20 @@ export function ProjectOverview({ projectsPaginated }: Props) {
                   <div className="mb-6">
                     <QuickTaskAdd
                       projectId={project.id}
-                      defaultDueDate={project.goalDate}
+                      defaultDueDate={new Date()}
                       availableTags={availableTags}
                       onAddTask={handleAddTask}
                     />
                   </div>
 
                   {/* Task Cards Grid */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {project.tasks.map((task) => (
-                      <TaskCard key={task.id} task={task} projectColor={project.color} />
-                    ))}
-                  </div>
-
-                  {project.tasks.length === 0 && (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <p>No tasks yet. Add your first task above!</p>
+                  <Suspense fallback={<TaskSkeleton />}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {optimisticTasks.map((task) => (
+                        <TaskCard key={task.id} task={task} projectColor={'#000'} />
+                      ))}
                     </div>
-                  )}
+                  </Suspense>
                 </AccordionContent>
               </AccordionItem>
             );

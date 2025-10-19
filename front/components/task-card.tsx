@@ -1,14 +1,16 @@
-"use client"
+'use client';
 
-import type { Task } from "@/components/project-overview"
-import { format } from "date-fns"
+import type { Task } from '@/components/project-overview';
+import { TaskList } from '@/types/task';
+import { format, parseISO } from 'date-fns';
 
 interface TaskCardProps {
-  task: Task
-  projectColor: string
+  task: TaskList;
+  projectColor: string;
 }
 
 export function TaskCard({ task, projectColor }: TaskCardProps) {
+  const endDate = task.end_at ? parseISO(task.end_at) : new Date();
   return (
     <div className="rounded-lg border border-border bg-card p-4 shadow-sm transition-all hover:shadow-md">
       {/* Task Name */}
@@ -16,26 +18,26 @@ export function TaskCard({ task, projectColor }: TaskCardProps) {
 
       {/* Due Date */}
       <div className="mb-3">
-        <p className="text-xs text-muted-foreground">Due: {format(new Date(task.dueDate), "MMM dd, yyyy")}</p>
+        <p className="text-xs text-muted-foreground">Due: {format(endDate, 'MMM dd, yyyy')}</p>
       </div>
 
       {/* Tags */}
-      {task.tags.length > 0 && (
+      {task.labels.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
-          {task.tags.map((tag) => (
+          {task.labels.map((tag) => (
             <span
-              key={tag}
+              key={tag.id}
               className="inline-flex items-center px-2 py-0.5 rounded-full text-xs"
               style={{
                 backgroundColor: `color-mix(in oklch, ${projectColor} 20%, transparent)`,
                 color: projectColor,
               }}
             >
-              {tag}
+              {tag.name}
             </span>
           ))}
         </div>
       )}
     </div>
-  )
+  );
 }
