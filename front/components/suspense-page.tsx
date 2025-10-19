@@ -2,7 +2,6 @@ import { getProject } from '@/actions/project-actions';
 
 import { ProjectOverview } from '@/components/project-overview';
 import { CommonError } from '@/components/common-error';
-import { getTasks } from '@/actions/task-actions';
 import { getCurrentUser } from '@/actions/auth-actions';
 
 export default async function SuspengecePage() {

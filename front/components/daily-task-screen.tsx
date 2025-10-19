@@ -294,14 +294,14 @@ export function DailyTaskScreen({}: Props) {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border">
+      {/* <header className="border-b border-border">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <h1 className="text-2xl font-semibold text-foreground">My Trees: Today&apos;s Focus</h1>
           <Button onClick={() => router.push('/member')} variant="ghost" size="icon">
             <TreesIcon className="h-5 w-5 text-[var(--forest-accent)]" />
           </Button>
         </div>
-      </header>
+      </header> */}
 
       {/* Two Column Layout */}
       <div className="container mx-auto px-6 py-8">

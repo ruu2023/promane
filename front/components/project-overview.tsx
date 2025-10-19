@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useOptimistic, useState } from 'react';
+import { Suspense, useMemo, useOptimistic, useState, useTransition } from 'react';
 import {
   Accordion,
   AccordionContent,
@@ -15,11 +15,13 @@ import { ProjectList } from '@/types/project';
 import { QuickProjectAdd } from './quick-project-add';
 import { PaginatedData, ProjectErrors } from '@/types/common';
 import { format, parseISO, startOfToday } from 'date-fns';
-import { createTask, getTasks } from '@/actions/task-actions';
+import { createTask, getTasks, updateTask } from '@/actions/task-actions';
 import { TaskErrors, TaskList, TaskPriority, TaskStatus } from '@/types/task';
 import { ProjectSkeleton } from './project-skelton';
 import { TaskSkeleton } from './task-skelton';
 import { User } from '@/types/user';
+import { getTaskLabels } from '@/actions/task-label-actions';
+import { TaskLabel } from '@/types/task-label';
 
 export interface Task {
   id: string;
@@ -37,138 +39,6 @@ export interface ProjectType {
   tasks: Task[];
 }
 
-// const initialMockProjects: ProjectType[] = [
-//   {
-//     id: '1',
-//     name: '金の文法',
-//     color: 'oklch(0.6 0.15 145)',
-//     goalDate: '2025-11-15',
-//     tasks: [
-//       {
-//         id: 't1',
-//         name: 'Chapter 1: Basic Grammar',
-//         projectId: '1',
-//         dueDate: '2025-10-20',
-//         tags: ['grammar', 'basics'],
-//       },
-//       {
-//         id: 't2',
-//         name: 'Chapter 2: Particles',
-//         projectId: '1',
-//         dueDate: '2025-10-25',
-//         tags: ['grammar'],
-//       },
-//       {
-//         id: 't3',
-//         name: 'Chapter 3: Verb Conjugation',
-//         projectId: '1',
-//         dueDate: '2025-10-30',
-//         tags: ['verbs', 'grammar'],
-//       },
-//       {
-//         id: 't4',
-//         name: 'Practice Exercises Set A',
-//         projectId: '1',
-//         dueDate: '2025-11-01',
-//         tags: ['practice'],
-//       },
-//       {
-//         id: 't5',
-//         name: 'Practice Exercises Set B',
-//         projectId: '1',
-//         dueDate: '2025-11-05',
-//         tags: ['practice'],
-//       },
-//       {
-//         id: 't6',
-//         name: 'Review and Quiz',
-//         projectId: '1',
-//         dueDate: '2025-11-10',
-//         tags: ['review', 'quiz'],
-//       },
-//     ],
-//   },
-//   {
-//     id: '2',
-//     name: 'React Advanced Patterns',
-//     color: 'oklch(0.6 0.2 260)',
-//     goalDate: '2025-10-31',
-//     tasks: [
-//       {
-//         id: 't7',
-//         name: 'Compound Components Pattern',
-//         projectId: '2',
-//         dueDate: '2025-10-18',
-//         tags: ['patterns', 'components'],
-//       },
-//       {
-//         id: 't8',
-//         name: 'Render Props Pattern',
-//         projectId: '2',
-//         dueDate: '2025-10-20',
-//         tags: ['patterns'],
-//       },
-//       {
-//         id: 't9',
-//         name: 'Higher Order Components',
-//         projectId: '2',
-//         dueDate: '2025-10-23',
-//         tags: ['patterns', 'hoc'],
-//       },
-//       {
-//         id: 't10',
-//         name: 'Custom Hooks Deep Dive',
-//         projectId: '2',
-//         dueDate: '2025-10-26',
-//         tags: ['hooks'],
-//       },
-//       {
-//         id: 't11',
-//         name: 'Context API Best Practices',
-//         projectId: '2',
-//         dueDate: '2025-10-29',
-//         tags: ['context', 'state'],
-//       },
-//     ],
-//   },
-//   {
-//     id: '3',
-//     name: 'Machine Learning Fundamentals',
-//     color: 'oklch(0.65 0.2 40)',
-//     goalDate: '2025-11-30',
-//     tasks: [
-//       {
-//         id: 't12',
-//         name: 'Linear Regression Theory',
-//         projectId: '3',
-//         dueDate: '2025-10-22',
-//         tags: ['theory', 'ml'],
-//       },
-//       {
-//         id: 't13',
-//         name: 'Gradient Descent Algorithm',
-//         projectId: '3',
-//         dueDate: '2025-10-28',
-//         tags: ['algorithms'],
-//       },
-//       {
-//         id: 't14',
-//         name: 'Neural Networks Basics',
-//         projectId: '3',
-//         dueDate: '2025-11-05',
-//         tags: ['neural-networks'],
-//       },
-//       {
-//         id: 't15',
-//         name: 'Backpropagation Explained',
-//         projectId: '3',
-//         dueDate: '2025-11-12',
-//         tags: ['neural-networks'],
-//       },
-//     ],
-//   },
-// ];
-
 function calculateDaysLeft(goal: Date): number {
   const today = new Date();
   const diffTime = goal.getTime() - today.getTime();
@@ -181,9 +51,12 @@ type Props = {
   currentUser: User;
 };
 
-export function ProjectOverview({ projectsPaginated, currentUser }: Props) {
-  // const [mockProjects, setMockProjects] = useState<ProjectType[]>(initialMockProjects);
+type OptimisticProjectAction =
+  | { type: 'ADD'; payload: ProjectList }
+  | { type: 'UPDATE_COMPLETE_COUNT'; payload: { id: number; newCount: number } }
+  | { type: 'UPDATE_TASK_COUNT'; payload: { id: number; newCount: number } };
 
+export function ProjectOverview({ projectsPaginated, currentUser }: Props) {
   /**
    * Project
    */
@@ -194,16 +67,37 @@ export function ProjectOverview({ projectsPaginated, currentUser }: Props) {
     // return Array.from(new Set(allTags));
   };
 
-  // 楽観的 UI 更新 Project
-  const [optimisticProjects, addOptimisticProjects] = useOptimistic(
-    projectsPaginated.data,
-    (curr, newProject: ProjectList) => {
-      if (curr.length > projectsPaginated.per_page) {
-        return [newProject, ...curr.slice(0, -1)];
-      } else {
-        return [newProject, ...curr];
+  const projectReducer = (
+    currentState: ProjectList[],
+    action: OptimisticProjectAction
+  ): ProjectList[] => {
+    switch (action.type) {
+      case 'ADD': {
+        const newProject = action.payload;
+        if (currentState.length >= projectsPaginated.per_page) {
+          return [newProject, ...currentState.slice(0, -1)];
+        } else {
+          return [newProject, ...currentState];
+        }
       }
+      case 'UPDATE_COMPLETE_COUNT': {
+        const { id, newCount } = action.payload;
+        return currentState.map((p) =>
+          p.id === id ? { ...p, completed_tasks_count: newCount } : p
+        );
+      }
+      case 'UPDATE_TASK_COUNT': {
+        const { id, newCount } = action.payload;
+        return currentState.map((p) => (p.id === id ? { ...p, tasks_count: newCount } : p));
+      }
+      default:
+        return currentState;
     }
+  };
+  // 楽観的 UI 更新 Project
+  const [optimisticProjects, setOptimisticProjects] = useOptimistic(
+    projectsPaginated.data,
+    projectReducer
   );
 
   const [projectErrors, setProjectErrors] = useState<ProjectErrors>({});
@@ -233,9 +127,10 @@ export function ProjectOverview({ projectsPaginated, currentUser }: Props) {
       updated_at: new Date().toISOString(),
       created_at: new Date().toISOString(),
       tasks_count: 0,
+      completed_tasks_count: 0,
     };
 
-    addOptimisticProjects(project);
+    setOptimisticProjects({ type: 'ADD', payload: project });
     const res = await createProject(body);
     if (res.success) {
       return;
@@ -252,6 +147,7 @@ export function ProjectOverview({ projectsPaginated, currentUser }: Props) {
   const [tasksPerPage, setTasksPerPage] = useState(20);
   // 楽観的 UI 更新 Tasks
   const [tasksByProject, setTasksByProject] = useState<Record<number, TaskList[]>>({});
+  const [taskLabelsByProject, setTaskLabelsByProject] = useState<Record<number, TaskLabel[]>>({});
   const [optimisticTasks, addOptimisticTasks] = useOptimistic(
     tasksByProject,
     (
@@ -280,8 +176,11 @@ export function ProjectOverview({ projectsPaginated, currentUser }: Props) {
 
     const taskRes = await getTasks(projectId);
     if (!taskRes.success) throw new Error('タスクの取得に失敗しました');
-    setTasksPerPage(taskRes.data.per_page);
     setTasksByProject((prev) => ({ ...prev, [projectId]: taskRes.data.data }));
+    setTasksPerPage(taskRes.data.per_page);
+    const labelRes = await getTaskLabels(projectId);
+    if (!labelRes.success) throw new Error('タスクの取得に失敗しました');
+    setTaskLabelsByProject((prev) => ({ ...prev, [projectId]: labelRes.data }));
     setIsLoading(false);
   };
 
@@ -322,6 +221,16 @@ export function ProjectOverview({ projectsPaginated, currentUser }: Props) {
       created_by: currentUser.id,
     };
 
+    startTransition(() => {
+      setOptimisticProjects({
+        type: 'UPDATE_TASK_COUNT',
+        payload: {
+          id: projectId,
+          newCount: (optimisticProjects.find((p) => p.id === projectId)?.tasks_count ?? 0) + 1,
+        },
+      });
+    });
+
     addOptimisticTasks({ projectId, newTask: task });
 
     const res = await createTask(projectId, body);
@@ -329,6 +238,44 @@ export function ProjectOverview({ projectsPaginated, currentUser }: Props) {
       setTasksByProject((prev) => ({
         ...prev,
         [projectId]: [res.data, ...prev[projectId]],
+      }));
+      return;
+    }
+    if (res.errors) {
+      setTaskErrors(res.errors);
+    }
+  };
+
+  const [isPending, startTransition] = useTransition();
+
+  const handleDone = async (projectId: number, task: TaskList) => {
+    if (!task) return;
+    const body = {
+      name: task.name,
+      description: task.description,
+      status: 'done' as TaskStatus,
+      priority: task.priority,
+      start_at: task.start_at,
+      end_at: task.end_at,
+      is_today: task.is_today,
+      assigned_to: task.assigned_to,
+    };
+
+    startTransition(() => {
+      setOptimisticProjects({
+        type: 'UPDATE_COMPLETE_COUNT',
+        payload: {
+          id: projectId,
+          newCount:
+            (optimisticProjects.find((p) => p.id === projectId)?.completed_tasks_count ?? 0) + 1,
+        },
+      });
+    });
+    const res = await updateTask(task.id, body);
+    if (res.success) {
+      setTasksByProject((prev) => ({
+        ...prev,
+        [projectId]: prev[projectId].map((task) => (task.id === res.data.id ? res.data : task)),
       }));
       return;
     }
@@ -346,15 +293,14 @@ export function ProjectOverview({ projectsPaginated, currentUser }: Props) {
       <div className="container mx-auto px-6 py-8 max-w-6xl">
         <Accordion type="single" collapsible className="space-y-4">
           {optimisticProjects.map((project) => {
-            const completedTasks = 0; // You can track this separately
+            const tasks = optimisticTasks[project.id] ?? [];
+            const completedTasks = project.completed_tasks_count ?? 0;
             const totalTasks = project.tasks_count;
             const progressPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
             const endDate = project.end_at ? parseISO(project.end_at) : new Date();
             const daysLeft = calculateDaysLeft(endDate);
             const formattedEndDate = format(endDate, 'yyyy-MM-dd');
-            const availableTags = getProjectTags(project);
-            const tasks = optimisticTasks[project.id] ?? [];
-
+            const availableTags = taskLabelsByProject[project.id]?.map((label) => label.name) ?? [];
             return (
               <AccordionItem
                 key={project.id}
@@ -396,7 +342,7 @@ export function ProjectOverview({ projectsPaginated, currentUser }: Props) {
                   {/* Quick Task Add Form */}
                   <div className="mb-6">
                     <QuickTaskAdd
-                      defaultDueDate={new Date()}
+                      defaultDueDate={startOfToday()}
                       availableTags={availableTags}
                       onAddTask={(formData) => handleAddTask(project.id, formData)}
                       taskErrors={taskErrors}
@@ -415,7 +361,12 @@ export function ProjectOverview({ projectsPaginated, currentUser }: Props) {
                   {!isLoading && tasks.length > 0 && (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {tasks.map((task) => (
-                        <TaskCard key={task.id} task={task} projectColor={'#000'} />
+                        <TaskCard
+                          key={task.id}
+                          task={task}
+                          projectColor={'#000'}
+                          onDoneClick={() => handleDone(project.id, task)}
+                        />
                       ))}
                     </div>
                   )}

@@ -3,13 +3,16 @@
 import type { Task } from '@/components/project-overview';
 import { TaskList } from '@/types/task';
 import { format, parseISO } from 'date-fns';
+import { Button } from './ui/button';
+import { DayButton } from 'react-day-picker';
 
 interface TaskCardProps {
   task: TaskList;
   projectColor: string;
+  onDoneClick?: () => void;
 }
 
-export function TaskCard({ task, projectColor }: TaskCardProps) {
+export function TaskCard({ task, projectColor, onDoneClick }: TaskCardProps) {
   const endDate = task.end_at ? parseISO(task.end_at) : new Date();
   return (
     <div className="rounded-lg border border-border bg-card p-4 shadow-sm transition-all hover:shadow-md">
@@ -38,6 +41,15 @@ export function TaskCard({ task, projectColor }: TaskCardProps) {
           ))}
         </div>
       )}
+
+      {/* Done */}
+      <Button
+        type="button"
+        onClick={onDoneClick}
+        className="bg-[var(--forest-accent)] hover:bg-[var(--forest-muted)] text-white"
+      >
+        Done
+      </Button>
     </div>
   );
 }

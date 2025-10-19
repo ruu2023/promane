@@ -4,7 +4,7 @@ import SuspengecePage from '@/components/suspense-page';
 import { ProjectSkeleton } from '@/components/project-skelton';
 import Header from '@/components/header';
 
-const page = async () => {
+const Member = async () => {
   return (
     <>
       <Header />
@@ -15,4 +15,4 @@ const page = async () => {
   );
 };
 
-export default page;
+export default Member;

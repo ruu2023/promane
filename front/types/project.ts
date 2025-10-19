@@ -12,6 +12,7 @@ export type ProjectBase = {
 
 export type ProjectList = ProjectBase & {
   tasks_count: number;
+  completed_tasks_count: number;
 };
 
 export type ProjectDetail = ProjectBase & {
