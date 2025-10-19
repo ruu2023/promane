@@ -15,18 +15,12 @@ import { TagInput } from '@/components/tag-input';
 import { InputErrorPopover } from './input-error-popover';
 
 interface QuickTaskAddProps {
-  projectId: number;
   defaultDueDate: Date;
   availableTags?: string[];
   onAddTask: (formData: FormData) => void;
 }
 
-export function QuickTaskAdd({
-  projectId,
-  defaultDueDate,
-  availableTags = [],
-  onAddTask,
-}: QuickTaskAddProps) {
+export function QuickTaskAdd({ defaultDueDate, availableTags = [], onAddTask }: QuickTaskAddProps) {
   const [taskName, setTaskName] = useState('');
   const [dueDate, setDueDate] = useState<Date>(defaultDueDate);
   const [tags, setTags] = useState<string[]>([]);
@@ -36,6 +30,8 @@ export function QuickTaskAdd({
       <h3 className="text-sm font-semibold text-foreground mb-3">Quick Task Add</h3>
       <form action={onAddTask} className="space-y-3">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {/* Project id */}
+
           {/* Task Name */}
           <div className="md:col-span-1">
             <Label htmlFor="task-name" className="text-xs text-muted-foreground">

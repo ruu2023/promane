@@ -27,6 +27,23 @@ export type TaskList = Task & {
   labels: TaskLabel[];
 };
 
+export type TaskDetail = Task & {
+  creator: User;
+  assignee: User | null;
+  labels: TaskLabel[];
+};
+
+export type postTaskInput = {
+  name: string;
+  description: string | null;
+  status: TaskStatus;
+  is_today: boolean;
+  priority: TaskPriority;
+  start_at: string | null;
+  end_at: string | null;
+  assigned_to: number | null;
+};
+
 export type TaskErrors = { [key: string]: string[] };
 
 // export interface Task {

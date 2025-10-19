@@ -15,10 +15,11 @@ import { postProjectInput, ProjectList } from '@/types/project';
 import { QuickProjectAdd } from './quick-project-add';
 import { PaginatedData, ProjectErrors } from '@/types/common';
 import { format, parseISO, startOfToday } from 'date-fns';
-import { getTasks } from '@/actions/task-actions';
+import { createTask, getTasks } from '@/actions/task-actions';
 import { TaskErrors, TaskList, TaskPriority, TaskStatus } from '@/types/task';
 import { ProjectSkeleton } from './project-skelton';
 import { TaskSkeleton } from './task-skelton';
+import { User } from '@/types/user';
 
 export interface Task {
   id: string;
@@ -36,137 +37,137 @@ export interface ProjectType {
   tasks: Task[];
 }
 
-const initialMockProjects: ProjectType[] = [
-  {
-    id: '1',
-    name: '金の文法',
-    color: 'oklch(0.6 0.15 145)',
-    goalDate: '2025-11-15',
-    tasks: [
-      {
-        id: 't1',
-        name: 'Chapter 1: Basic Grammar',
-        projectId: '1',
-        dueDate: '2025-10-20',
-        tags: ['grammar', 'basics'],
-      },
-      {
-        id: 't2',
-        name: 'Chapter 2: Particles',
-        projectId: '1',
-        dueDate: '2025-10-25',
-        tags: ['grammar'],
-      },
-      {
-        id: 't3',
-        name: 'Chapter 3: Verb Conjugation',
-        projectId: '1',
-        dueDate: '2025-10-30',
-        tags: ['verbs', 'grammar'],
-      },
-      {
-        id: 't4',
-        name: 'Practice Exercises Set A',
-        projectId: '1',
-        dueDate: '2025-11-01',
-        tags: ['practice'],
-      },
-      {
-        id: 't5',
-        name: 'Practice Exercises Set B',
-        projectId: '1',
-        dueDate: '2025-11-05',
-        tags: ['practice'],
-      },
-      {
-        id: 't6',
-        name: 'Review and Quiz',
-        projectId: '1',
-        dueDate: '2025-11-10',
-        tags: ['review', 'quiz'],
-      },
-    ],
-  },
-  {
-    id: '2',
-    name: 'React Advanced Patterns',
-    color: 'oklch(0.6 0.2 260)',
-    goalDate: '2025-10-31',
-    tasks: [
-      {
-        id: 't7',
-        name: 'Compound Components Pattern',
-        projectId: '2',
-        dueDate: '2025-10-18',
-        tags: ['patterns', 'components'],
-      },
-      {
-        id: 't8',
-        name: 'Render Props Pattern',
-        projectId: '2',
-        dueDate: '2025-10-20',
-        tags: ['patterns'],
-      },
-      {
-        id: 't9',
-        name: 'Higher Order Components',
-        projectId: '2',
-        dueDate: '2025-10-23',
-        tags: ['patterns', 'hoc'],
-      },
-      {
-        id: 't10',
-        name: 'Custom Hooks Deep Dive',
-        projectId: '2',
-        dueDate: '2025-10-26',
-        tags: ['hooks'],
-      },
-      {
-        id: 't11',
-        name: 'Context API Best Practices',
-        projectId: '2',
-        dueDate: '2025-10-29',
-        tags: ['context', 'state'],
-      },
-    ],
-  },
-  {
-    id: '3',
-    name: 'Machine Learning Fundamentals',
-    color: 'oklch(0.65 0.2 40)',
-    goalDate: '2025-11-30',
-    tasks: [
-      {
-        id: 't12',
-        name: 'Linear Regression Theory',
-        projectId: '3',
-        dueDate: '2025-10-22',
-        tags: ['theory', 'ml'],
-      },
-      {
-        id: 't13',
-        name: 'Gradient Descent Algorithm',
-        projectId: '3',
-        dueDate: '2025-10-28',
-        tags: ['algorithms'],
-      },
-      {
-        id: 't14',
-        name: 'Neural Networks Basics',
-        projectId: '3',
-        dueDate: '2025-11-05',
-        tags: ['neural-networks'],
-      },
-      {
-        id: 't15',
-        name: 'Backpropagation Explained',
-        projectId: '3',
-        dueDate: '2025-11-12',
-        tags: ['neural-networks'],
-      },
-    ],
-  },
-];
+// const initialMockProjects: ProjectType[] = [
+//   {
+//     id: '1',
+//     name: '金の文法',
+//     color: 'oklch(0.6 0.15 145)',
+//     goalDate: '2025-11-15',
+//     tasks: [
+//       {
+//         id: 't1',
+//         name: 'Chapter 1: Basic Grammar',
+//         projectId: '1',
+//         dueDate: '2025-10-20',
+//         tags: ['grammar', 'basics'],
+//       },
+//       {
+//         id: 't2',
+//         name: 'Chapter 2: Particles',
+//         projectId: '1',
+//         dueDate: '2025-10-25',
+//         tags: ['grammar'],
+//       },
+//       {
+//         id: 't3',
+//         name: 'Chapter 3: Verb Conjugation',
+//         projectId: '1',
+//         dueDate: '2025-10-30',
+//         tags: ['verbs', 'grammar'],
+//       },
+//       {
+//         id: 't4',
+//         name: 'Practice Exercises Set A',
+//         projectId: '1',
+//         dueDate: '2025-11-01',
+//         tags: ['practice'],
+//       },
+//       {
+//         id: 't5',
+//         name: 'Practice Exercises Set B',
+//         projectId: '1',
+//         dueDate: '2025-11-05',
+//         tags: ['practice'],
+//       },
+//       {
+//         id: 't6',
+//         name: 'Review and Quiz',
+//         projectId: '1',
+//         dueDate: '2025-11-10',
+//         tags: ['review', 'quiz'],
+//       },
+//     ],
+//   },
+//   {
+//     id: '2',
+//     name: 'React Advanced Patterns',
+//     color: 'oklch(0.6 0.2 260)',
+//     goalDate: '2025-10-31',
+//     tasks: [
+//       {
+//         id: 't7',
+//         name: 'Compound Components Pattern',
+//         projectId: '2',
+//         dueDate: '2025-10-18',
+//         tags: ['patterns', 'components'],
+//       },
+//       {
+//         id: 't8',
+//         name: 'Render Props Pattern',
+//         projectId: '2',
+//         dueDate: '2025-10-20',
+//         tags: ['patterns'],
+//       },
+//       {
+//         id: 't9',
+//         name: 'Higher Order Components',
+//         projectId: '2',
+//         dueDate: '2025-10-23',
+//         tags: ['patterns', 'hoc'],
+//       },
+//       {
+//         id: 't10',
+//         name: 'Custom Hooks Deep Dive',
+//         projectId: '2',
+//         dueDate: '2025-10-26',
+//         tags: ['hooks'],
+//       },
+//       {
+//         id: 't11',
+//         name: 'Context API Best Practices',
+//         projectId: '2',
+//         dueDate: '2025-10-29',
+//         tags: ['context', 'state'],
+//       },
+//     ],
+//   },
+//   {
+//     id: '3',
+//     name: 'Machine Learning Fundamentals',
+//     color: 'oklch(0.65 0.2 40)',
+//     goalDate: '2025-11-30',
+//     tasks: [
+//       {
+//         id: 't12',
+//         name: 'Linear Regression Theory',
+//         projectId: '3',
+//         dueDate: '2025-10-22',
+//         tags: ['theory', 'ml'],
+//       },
+//       {
+//         id: 't13',
+//         name: 'Gradient Descent Algorithm',
+//         projectId: '3',
+//         dueDate: '2025-10-28',
+//         tags: ['algorithms'],
+//       },
+//       {
+//         id: 't14',
+//         name: 'Neural Networks Basics',
+//         projectId: '3',
+//         dueDate: '2025-11-05',
+//         tags: ['neural-networks'],
+//       },
+//       {
+//         id: 't15',
+//         name: 'Backpropagation Explained',
+//         projectId: '3',
+//         dueDate: '2025-11-12',
+//         tags: ['neural-networks'],
+//       },
+//     ],
+//   },
+// ];
 
 function calculateDaysLeft(goal: Date): number {
   const today = new Date();
@@ -177,10 +178,15 @@ function calculateDaysLeft(goal: Date): number {
 
 type Props = {
   projectsPaginated: PaginatedData<ProjectList>;
+  currentUser: User;
 };
 
-export function ProjectOverview({ projectsPaginated }: Props) {
-  const [mockProjects, setMockProjects] = useState<ProjectType[]>(initialMockProjects);
+export function ProjectOverview({ projectsPaginated, currentUser }: Props) {
+  // const [mockProjects, setMockProjects] = useState<ProjectType[]>(initialMockProjects);
+
+  /**
+   * Project
+   */
 
   const getProjectTags = (project: ProjectList): string[] => {
     return ['tagA', 'tagB'];
@@ -192,50 +198,15 @@ export function ProjectOverview({ projectsPaginated }: Props) {
   const [optimisticProjects, addOptimisticProjects] = useOptimistic(
     projectsPaginated.data,
     (curr, newProject: ProjectList) => {
-      return [newProject, ...curr.slice(0, -1)];
+      if (curr.length > projectsPaginated.per_page) {
+        return [newProject, ...curr.slice(0, -1)];
+      } else {
+        return [newProject, ...curr];
+      }
     }
   );
 
   const [projectErrors, setProjectErrors] = useState<ProjectErrors>({});
-
-  const [taskErrors, setTaskErrors] = useState<TaskErrors>({});
-  const handleAddTask = (formData: FormData) => {
-    setTaskErrors({});
-    const name = formData.get('name') as string;
-    const description = formData.get('description') as string;
-    const end_at = formData.get('end_at') as string;
-
-    // For UX validation
-    if (!name.trim()) {
-      setProjectErrors({ name: ['プロジェクト名を入力してください'] });
-      return;
-    }
-
-    const body = {
-      name,
-      description,
-      status: 'in_progress' as TaskStatus,
-      priority: 'low' as TaskPriority,
-      start_at: format(startOfToday(), 'yyyy-MM-dd HH:mm:ss'),
-      end_at,
-      assigned_to: null,
-    };
-
-    const task = {
-      ...body,
-      id: -Date.now(),
-      updated_at: new Date().toISOString(),
-      created_at: new Date().toISOString(),
-      creator: {},
-      assignee: null,
-      labels: [],
-      project_id: 1,
-      is_today: false,
-      created_by: -Date.now(),
-    };
-
-    // addOptimisticTasks(task);
-  };
 
   const handleProjectCreate = async (formData: FormData) => {
     setProjectErrors({});
@@ -267,28 +238,88 @@ export function ProjectOverview({ projectsPaginated }: Props) {
     addOptimisticProjects(project);
     const res = await createProject(body);
     if (res.success) {
-      console.log('ok');
       return;
     }
-    console.log(res);
     if (res.errors) {
       setProjectErrors(res.errors);
     }
   };
 
+  /**
+   * Task
+   */
+  const [hasFetched, setHasFetched] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [tasksPerPage, setTasksPerPage] = useState(20);
   // 楽観的 UI 更新 Tasks
   const [tasks, setTasks] = useState<TaskList[]>([]);
-  const [optimisticTasks, addOptimisticTasks] = useOptimistic(
-    tasks,
-    (curr, newProject: TaskList) => {
-      return [newProject, ...curr.slice(0, -1)];
+  const [optimisticTasks, addOptimisticTasks] = useOptimistic(tasks, (curr, newTask: TaskList) => {
+    if (curr.length > tasksPerPage) {
+      return [newTask, ...curr.slice(0, -1)];
+    } else {
+      return [newTask, ...curr];
     }
-  );
+  });
 
   const handleTriggerClick = async (projectId: number) => {
+    if (hasFetched || isLoading) return;
+    setIsLoading(true);
+    setHasFetched(true);
+
     const taskRes = await getTasks(projectId);
     if (!taskRes.success) throw new Error('タスクの取得に失敗しました');
+    setTasksPerPage(taskRes.data.per_page);
     setTasks(taskRes.data.data);
+    setIsLoading(false);
+  };
+
+  const [taskErrors, setTaskErrors] = useState<TaskErrors>({});
+  const handleAddTask = async (projectId: number, formData: FormData) => {
+    setTaskErrors({});
+
+    const name = formData.get('name') as string;
+    const description = formData.get('description') as string;
+    const end_at = formData.get('end_at') as string;
+
+    // For UX validation
+    if (!name.trim()) {
+      setTaskErrors({ name: ['タスク名を入力してください'] });
+      return;
+    }
+
+    const body = {
+      name,
+      description,
+      status: 'in_progress' as TaskStatus,
+      priority: 'low' as TaskPriority,
+      start_at: format(startOfToday(), 'yyyy-MM-dd HH:mm:ss'),
+      end_at,
+      is_today: false,
+      assigned_to: null,
+    };
+
+    const task = {
+      ...body,
+      id: -Date.now(),
+      updated_at: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      creator: currentUser,
+      assignee: null,
+      labels: [],
+      project_id: projectId,
+      created_by: currentUser.id,
+    };
+
+    addOptimisticTasks(task);
+
+    const res = await createTask(projectId, body);
+    if (res.success) {
+      setTasks((prev) => [res.data, ...prev]);
+      return;
+    }
+    if (res.errors) {
+      setTaskErrors(res.errors);
+    }
   };
 
   return (
@@ -349,21 +380,28 @@ export function ProjectOverview({ projectsPaginated }: Props) {
                   {/* Quick Task Add Form */}
                   <div className="mb-6">
                     <QuickTaskAdd
-                      projectId={project.id}
                       defaultDueDate={new Date()}
                       availableTags={availableTags}
-                      onAddTask={handleAddTask}
+                      onAddTask={(formData) => handleAddTask(project.id, formData)}
                     />
                   </div>
 
                   {/* Task Cards Grid */}
-                  <Suspense fallback={<TaskSkeleton />}>
+                  {isLoading && <TaskSkeleton />}
+
+                  {!isLoading && hasFetched && optimisticTasks.length === 0 && (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <p>No tasks yet. Add your first task above!</p>
+                    </div>
+                  )}
+
+                  {!isLoading && optimisticTasks.length > 0 && (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {optimisticTasks.map((task) => (
                         <TaskCard key={task.id} task={task} projectColor={'#000'} />
                       ))}
                     </div>
-                  </Suspense>
+                  )}
                 </AccordionContent>
               </AccordionItem>
             );

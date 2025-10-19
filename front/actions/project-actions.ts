@@ -38,7 +38,7 @@ export const createProject = async (
       };
     }
 
-    revalidatePath('/');
+    revalidatePath('/member');
     return { success: true, message: 'ok', data: data };
   } catch (err) {
     console.error('Network or other : ', err);
