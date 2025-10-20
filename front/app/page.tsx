@@ -1,7 +1,16 @@
-import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
+import Header from '@/components/header';
+import Link from 'next/link';
 
-export default async function Home() {
-
-  return <div>ようこそ</div>;
+export default function Home() {
+  return (
+    <>
+      <Header />
+      <p>
+        <Link href={'./login'}>ログインページへ</Link>
+      </p>
+      <p>
+        <Link href={'./register'}>会員登録</Link>
+      </p>
+    </>
+  );
 }

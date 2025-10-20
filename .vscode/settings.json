@@ -9,6 +9,9 @@
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
   "php-cs-fixer.executablePath": "${workspaceFolder}/back/vendor/bin/php-cs-fixer",
   "php-cs-fixer.autoFixBySave": true,
   "intelephense.format.enable": false

@@ -10,8 +10,13 @@ class ProjectController extends Controller
 {
     public function index(Request $request)
     {
-        $projects = Project::withCount('tasks')
-            ->whereHas('users', fn ($q) => $q->where('users.id', $request->user()->id))
+        $projects = Project::withCount([
+            'tasks',
+            'tasks as completed_tasks_count' => function ($query) {
+                $query->where('status', 'done');
+            }
+        ])
+            ->whereHas('users', fn ($q) => $q->where('users.id', $request->user()->id)) // 自身の project に絞り込み
             ->latest()
             ->paginate(20);
 

@@ -1,11 +1,18 @@
-import React from 'react'
-import Client from './client'
-import { redirect } from 'next/navigation';
+import React, { Suspense } from 'react';
 
-const page =  async () => {
+import SuspengecePage from '@/components/suspense-page';
+import { ProjectSkeleton } from '@/components/project-skelton';
+import Header from '@/components/header';
+
+const Member = async () => {
   return (
-    <Client />
-  )
-}
+    <>
+      <Header />
+      <Suspense fallback={<ProjectSkeleton />}>
+        <SuspengecePage />
+      </Suspense>
+    </>
+  );
+};
 
-export default page
+export default Member;
