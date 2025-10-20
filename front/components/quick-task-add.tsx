@@ -2,7 +2,7 @@
 
 import type React from 'react';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils';
 import { TagInput } from '@/components/tag-input';
 import { InputErrorPopover } from './input-error-popover';
 import { TaskErrors } from '@/types/task';
+import { SubmitButton } from './submit-button';
 
 interface QuickTaskAddProps {
   defaultDueDate: Date;
@@ -31,11 +32,21 @@ export function QuickTaskAdd({
   const [taskName, setTaskName] = useState('');
   const [dueDate, setDueDate] = useState<Date>(defaultDueDate);
   const [tags, setTags] = useState<string[]>([]);
+  const formRef = useRef<HTMLFormElement>(null);
 
   return (
     <div className="bg-muted/50 rounded-lg p-4 border border-border">
       <h3 className="text-sm font-semibold text-foreground mb-3">Quick Task Add</h3>
-      <form action={onAddTask} className="space-y-3">
+      <form
+        ref={formRef}
+        onSubmit={(e) => {
+          e.preventDefault();
+          const formData = new FormData(e.currentTarget);
+          onAddTask(formData);
+          formRef.current?.reset();
+        }}
+        className="space-y-3"
+      >
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {/* Project id */}
 
@@ -110,13 +121,7 @@ export function QuickTaskAdd({
 
         {/* Add Button */}
         <div className="flex justify-end">
-          <Button
-            type="submit"
-            className="bg-[var(--forest-accent)] hover:bg-[var(--forest-muted)] text-white"
-          >
-            <PlusIcon className="h-4 w-4 mr-2" />
-            Add Task
-          </Button>
+          <SubmitButton name="Add Task" loadMessage="Adding..." />
         </div>
       </form>
     </div>

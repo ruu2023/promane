@@ -4,7 +4,12 @@ import { useFormStatus } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import { PlusIcon, Loader2 } from 'lucide-react';
 
-export function SubmitButton() {
+type Props = {
+  name?: string;
+  loadMessage?: string;
+};
+
+export function SubmitButton({ name = 'Add Project', loadMessage = 'Adding...' }: Props) {
   const { pending } = useFormStatus();
 
   return (
@@ -19,7 +24,7 @@ export function SubmitButton() {
         ) : (
           <PlusIcon className="h-4 w-4 mr-2" />
         )}
-        {pending ? 'Adding...' : 'Add Project'}
+        {pending ? loadMessage : name}
       </Button>
     </div>
   );

@@ -8,11 +8,10 @@ import { DayButton } from 'react-day-picker';
 
 interface TaskCardProps {
   task: TaskList;
-  projectColor: string;
   onDoneClick?: () => void;
 }
 
-export function TaskCard({ task, projectColor, onDoneClick }: TaskCardProps) {
+export function TaskCard({ task, onDoneClick }: TaskCardProps) {
   const endDate = task.end_at ? parseISO(task.end_at) : new Date();
   return (
     <div className="rounded-lg border border-border bg-card p-4 shadow-sm transition-all hover:shadow-md">
@@ -32,8 +31,8 @@ export function TaskCard({ task, projectColor, onDoneClick }: TaskCardProps) {
               key={tag.id}
               className="inline-flex items-center px-2 py-0.5 rounded-full text-xs"
               style={{
-                backgroundColor: `color-mix(in oklch, ${projectColor} 20%, transparent)`,
-                color: projectColor,
+                backgroundColor: `color-mix(in oklch, ${tag.color} 20%, transparent)`,
+                color: tag.color,
               }}
             >
               {tag.name}

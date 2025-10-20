@@ -148,27 +148,6 @@ export function ProjectOverview({ projectsPaginated, currentUser }: Props) {
   // 楽観的 UI 更新 Tasks
   const [tasksByProject, setTasksByProject] = useState<Record<number, TaskList[]>>({});
   const [taskLabelsByProject, setTaskLabelsByProject] = useState<Record<number, TaskLabel[]>>({});
-  const [optimisticTasks, addOptimisticTasks] = useOptimistic(
-    tasksByProject,
-    (
-      currentTasksByProject: Record<number, TaskList[]>,
-      { projectId, newTask }: { projectId: number; newTask: TaskList }
-    ) => {
-      const currTasks = currentTasksByProject[projectId] || [];
-
-      let newTasks: TaskList[];
-      if (currTasks.length > tasksPerPage) {
-        newTasks = [newTask, ...currTasks.slice(0, -1)];
-      } else {
-        newTasks = [newTask, ...currTasks];
-      }
-      return {
-        ...currentTasksByProject,
-        [projectId]: newTasks,
-      };
-    }
-  );
-
   const handleTriggerClick = async (projectId: number) => {
     const hasProjectFetched = Object.keys(tasksByProject).includes(String(projectId));
     if (hasProjectFetched || isLoading) return;
@@ -184,8 +163,10 @@ export function ProjectOverview({ projectsPaginated, currentUser }: Props) {
     setIsLoading(false);
   };
 
+  const [isPending, startTransition] = useTransition();
+
   const [taskErrors, setTaskErrors] = useState<TaskErrors>({});
-  const handleAddTask = async (projectId: number, formData: FormData) => {
+  const handleAddTask = (projectId: number, formData: FormData) => {
     setTaskErrors({});
 
     const name = formData.get('name') as string;
@@ -221,6 +202,10 @@ export function ProjectOverview({ projectsPaginated, currentUser }: Props) {
       created_by: currentUser.id,
     };
 
+    setTasksByProject((prev) => ({
+      ...prev,
+      [projectId]: [task, ...(prev[projectId] || [])],
+    }));
     startTransition(() => {
       setOptimisticProjects({
         type: 'UPDATE_TASK_COUNT',
@@ -230,23 +215,24 @@ export function ProjectOverview({ projectsPaginated, currentUser }: Props) {
         },
       });
     });
-
-    addOptimisticTasks({ projectId, newTask: task });
-
-    const res = await createTask(projectId, body);
-    if (res.success) {
-      setTasksByProject((prev) => ({
-        ...prev,
-        [projectId]: [res.data, ...prev[projectId]],
-      }));
-      return;
-    }
-    if (res.errors) {
-      setTaskErrors(res.errors);
-    }
+    createTask(projectId, body).then((res) => {
+      if (res.success) {
+        const newTask: TaskList = res.data;
+        setTasksByProject((prev) => ({
+          ...prev,
+          [projectId]: prev[projectId].map((t) => (t.id === task.id ? newTask : t)),
+        }));
+        return;
+      }
+      if (res.errors) {
+        setTasksByProject((prev) => ({
+          ...prev,
+          [projectId]: prev[projectId].filter((t) => t.id !== task.id),
+        }));
+        setTaskErrors(res.errors);
+      }
+    });
   };
-
-  const [isPending, startTransition] = useTransition();
 
   const handleDone = async (projectId: number, task: TaskList) => {
     if (!task) return;
@@ -293,7 +279,7 @@ export function ProjectOverview({ projectsPaginated, currentUser }: Props) {
       <div className="container mx-auto px-6 py-8 max-w-6xl">
         <Accordion type="single" collapsible className="space-y-4">
           {optimisticProjects.map((project) => {
-            const tasks = optimisticTasks[project.id] ?? [];
+            const tasks = tasksByProject[project.id] ?? [];
             const completedTasks = project.completed_tasks_count ?? 0;
             const totalTasks = project.tasks_count;
             const progressPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
@@ -364,7 +350,6 @@ export function ProjectOverview({ projectsPaginated, currentUser }: Props) {
                         <TaskCard
                           key={task.id}
                           task={task}
-                          projectColor={'#000'}
                           onDoneClick={() => handleDone(project.id, task)}
                         />
                       ))}
