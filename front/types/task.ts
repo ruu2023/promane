@@ -1,3 +1,4 @@
+import { ProjectBase } from './project';
 import { TaskLabel } from './task-label';
 import { User } from './user';
 
@@ -31,6 +32,11 @@ export type TaskDetail = Task & {
   creator: User;
   assignee: User | null;
   labels: TaskLabel[];
+};
+
+export type TodayTask = Task & {
+  projecct: ProjectBase;
+  assignee: User | null;
 };
 
 export type postTaskInput = {

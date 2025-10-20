@@ -6,6 +6,10 @@ import { TreesIcon } from 'lucide-react';
 import { TaskCandidates } from '@/components/task-candidates';
 import { TodaysPlaylist } from '@/components/todays-playlist';
 import { useRouter } from 'next/navigation';
+import { PaginatedData } from '@/types/common';
+import { ProjectList } from '@/types/project';
+import { User } from '@/types/user';
+import { TodayTask } from '@/types/task';
 
 export interface Task {
   id: string;
@@ -172,10 +176,12 @@ const initialProjects: Project[] = [
 ];
 
 type Props = {
-  // onChangeView: (name: ViewName) => void;
+  projectsPaginated: PaginatedData<ProjectList>;
+  currentUser: User;
+  todayTasks: TodayTask;
 };
-
-export function DailyTaskScreen({}: Props) {
+export function DailyTaskScreen({ projectsPaginated, currentUser, todayTasks }: Props) {
+  console.log(projectsPaginated, currentUser, todayTasks);
   const [projects, setProjects] = useState<Project[]>(initialProjects);
   const [playlist, setPlaylist] = useState<PlaylistTask[]>([
     {
