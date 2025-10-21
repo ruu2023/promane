@@ -89,7 +89,7 @@ export const updateTask = async (
   }
 };
 
-export const getTodayTasks = async (): Promise<ApiResponse<TodayTask>> => {
+export const getTodayTasks = async (): Promise<ApiResponse<TodayTask[]>> => {
   const cookieStore = await cookies();
   const token = cookieStore.get('auth_token')?.value;
   try {

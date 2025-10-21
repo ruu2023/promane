@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
 import { TreesIcon } from 'lucide-react';
 import { TaskCandidates } from '@/components/task-candidates';
@@ -9,7 +9,11 @@ import { useRouter } from 'next/navigation';
 import { PaginatedData } from '@/types/common';
 import { ProjectList } from '@/types/project';
 import { User } from '@/types/user';
-import { TodayTask } from '@/types/task';
+import { TaskErrors, TaskList, TaskPriority, TaskStatus, TodayTask } from '@/types/task';
+import { startOfToday, format } from 'date-fns';
+import { createTask, getTasks } from '@/actions/task-actions';
+import { getTaskLabels } from '@/actions/task-label-actions';
+import { TaskLabel } from '@/types/task-label';
 
 export interface Task {
   id: string;
@@ -31,284 +35,167 @@ export interface PlaylistTask extends Task {
   completed: boolean;
 }
 
-const initialProjects: Project[] = [
-  {
-    id: '1',
-    name: '金の文法',
-    color: 'oklch(0.6 0.15 145)', // Green
-    tasks: [
-      {
-        id: 't1',
-        name: 'Chapter 1: Basic Grammar',
-        projectId: '1',
-        duration: 30,
-        dueDate: '2025-10-20',
-        tags: ['grammar', 'basics'],
-      },
-      {
-        id: 't2',
-        name: 'Chapter 2: Particles',
-        projectId: '1',
-        duration: 45,
-        dueDate: '2025-10-22',
-        tags: ['grammar', 'particles'],
-      },
-      {
-        id: 't3',
-        name: 'Chapter 3: Verb Conjugation',
-        projectId: '1',
-        duration: 60,
-        dueDate: '2025-10-25',
-        tags: ['grammar', 'verbs'],
-      },
-      {
-        id: 't4',
-        name: 'Practice Exercises Set A',
-        projectId: '1',
-        duration: 30,
-        dueDate: '2025-10-27',
-        tags: ['practice'],
-      },
-      {
-        id: 't5',
-        name: 'Practice Exercises Set B',
-        projectId: '1',
-        duration: 30,
-        dueDate: '2025-10-29',
-        tags: ['practice'],
-      },
-      {
-        id: 't6',
-        name: 'Review and Quiz',
-        projectId: '1',
-        duration: 45,
-        dueDate: '2025-10-31',
-        tags: ['review', 'quiz'],
-      },
-    ],
-  },
-  {
-    id: '2',
-    name: 'React Advanced Patterns',
-    color: 'oklch(0.6 0.2 260)', // Blue
-    tasks: [
-      {
-        id: 't7',
-        name: 'Compound Components Pattern',
-        projectId: '2',
-        duration: 45,
-        dueDate: '2025-10-18',
-        tags: ['patterns', 'components'],
-      },
-      {
-        id: 't8',
-        name: 'Render Props Pattern',
-        projectId: '2',
-        duration: 45,
-        dueDate: '2025-10-20',
-        tags: ['patterns', 'props'],
-      },
-      {
-        id: 't9',
-        name: 'Higher Order Components',
-        projectId: '2',
-        duration: 60,
-        dueDate: '2025-10-23',
-        tags: ['patterns', 'hoc'],
-      },
-      {
-        id: 't10',
-        name: 'Custom Hooks Deep Dive',
-        projectId: '2',
-        duration: 50,
-        dueDate: '2025-10-25',
-        tags: ['hooks', 'advanced'],
-      },
-      {
-        id: 't11',
-        name: 'Context API Best Practices',
-        projectId: '2',
-        duration: 40,
-        dueDate: '2025-10-28',
-        tags: ['context', 'state'],
-      },
-    ],
-  },
-  {
-    id: '3',
-    name: 'Machine Learning Fundamentals',
-    color: 'oklch(0.65 0.2 40)', // Orange
-    tasks: [
-      {
-        id: 't12',
-        name: 'Linear Regression Theory',
-        projectId: '3',
-        duration: 60,
-        dueDate: '2025-10-19',
-        tags: ['theory', 'regression'],
-      },
-      {
-        id: 't13',
-        name: 'Gradient Descent Algorithm',
-        projectId: '3',
-        duration: 45,
-        dueDate: '2025-10-22',
-        tags: ['algorithms', 'optimization'],
-      },
-      {
-        id: 't14',
-        name: 'Neural Networks Basics',
-        projectId: '3',
-        duration: 90,
-        dueDate: '2025-10-26',
-        tags: ['neural-networks', 'basics'],
-      },
-      {
-        id: 't15',
-        name: 'Backpropagation Explained',
-        projectId: '3',
-        duration: 60,
-        dueDate: '2025-10-30',
-        tags: ['neural-networks', 'theory'],
-      },
-    ],
-  },
-];
-
 type Props = {
   projectsPaginated: PaginatedData<ProjectList>;
   currentUser: User;
-  todayTasks: TodayTask;
+  todayTasks: TodayTask[];
 };
 export function DailyTaskScreen({ projectsPaginated, currentUser, todayTasks }: Props) {
-  console.log(projectsPaginated, currentUser, todayTasks);
-  const [projects, setProjects] = useState<Project[]>(initialProjects);
-  const [playlist, setPlaylist] = useState<PlaylistTask[]>([
-    {
-      id: 't1',
-      name: 'Chapter 1: Basic Grammar',
-      projectId: '1',
-      duration: 30,
-      dueDate: '2025-10-20',
-      tags: ['grammar', 'basics'],
-      completed: false,
-    },
-    {
-      id: 't7',
-      name: 'Compound Components Pattern',
-      projectId: '2',
-      duration: 45,
-      dueDate: '2025-10-18',
-      tags: ['patterns', 'components'],
-      completed: false,
-    },
-  ]);
+  const [projects, setProjects] = useState<ProjectList[]>(projectsPaginated.data);
+  const [playlist, setPlaylist] = useState<TodayTask[]>(todayTasks);
 
-  const handleAddToPlaylist = (task: Task) => {
+  const handleAddToPlaylist = (task: TaskList) => {
     // Remove from project
-    setProjects((prev) =>
-      prev.map((project) =>
-        project.id === task.projectId
-          ? { ...project, tasks: project.tasks.filter((t) => t.id !== task.id) }
-          : project
-      )
-    );
-
+    // setProjects((prev) =>
+    //   prev.map((project) =>
+    //     project.id === task.projectId
+    //       ? { ...project, tasks: project.tasks.filter((t) => t.id !== task.id) }
+    //       : project
+    //   )
+    // );
     // Add to playlist
-    const newTask: PlaylistTask = {
-      ...task,
-      completed: false,
-    };
-    setPlaylist((prev) => [...prev, newTask]);
+    // const newTask: PlaylistTask = {
+    //   ...task,
+    //   completed: false,
+    // };
+    // setPlaylist((prev) => [...prev, newTask]);
   };
 
-  const handleRemoveFromPlaylist = (task: PlaylistTask) => {
+  const handleRemoveFromPlaylist = (task: TodayTask) => {
     // Remove from playlist
-    setPlaylist((prev) => prev.filter((t) => t.id !== task.id));
-
+    // setPlaylist((prev) => prev.filter((t) => t.id !== task.id));
     // Add back to project
-    const taskWithoutPlaylistProps: Task = {
-      id: task.id,
-      name: task.name,
-      projectId: task.projectId,
-      duration: task.duration,
-      dueDate: task.dueDate,
-      tags: task.tags,
-    };
-
-    setProjects((prev) =>
-      prev.map((project) =>
-        project.id === task.projectId
-          ? { ...project, tasks: [...project.tasks, taskWithoutPlaylistProps] }
-          : project
-      )
-    );
+    // const taskWithoutPlaylistProps: Task = {
+    //   id: task.id,
+    //   name: task.name,
+    //   projectId: task.projectId,
+    //   duration: task.duration,
+    //   dueDate: task.dueDate,
+    //   tags: task.tags,
+    // };
+    // setProjects((prev) =>
+    //   prev.map((project) =>
+    //     project.id === task.projectId
+    //       ? { ...project, tasks: [...project.tasks, taskWithoutPlaylistProps] }
+    //       : project
+    //   )
+    // );
   };
 
-  const handleToggleComplete = (taskId: string) => {
-    setPlaylist((prev) =>
-      prev.map((task) => (task.id === taskId ? { ...task, completed: !task.completed } : task))
-    );
+  const handleToggleComplete = (taskId: number) => {
+    // setPlaylist((prev) =>
+    //   prev.map((task) => (task.id === taskId ? { ...task, completed: !task.completed } : task))
+    // );
   };
 
-  const handleCreateTask = (taskData: Omit<Task, 'id'>) => {
-    const newTask: Task = {
-      ...taskData,
-      id: `t${Date.now()}`, // Generate unique ID
-    };
-
-    setProjects((prev) =>
-      prev.map((project) =>
-        project.id === newTask.projectId
-          ? { ...project, tasks: [...project.tasks, newTask] }
-          : project
-      )
-    );
-  };
-
-  const handleEditTask = (updatedTask: Task) => {
-    setProjects((prev) =>
-      prev.map((project) =>
-        project.id === updatedTask.projectId
-          ? {
-              ...project,
-              tasks: project.tasks.map((task) => (task.id === updatedTask.id ? updatedTask : task)),
-            }
-          : project
-      )
-    );
-
+  const handleEditTask = (updatedTask: TaskList) => {
+    // setProjects((prev) =>
+    //   prev.map((project) =>
+    //     project.id === updatedTask.projectId
+    //       ? {
+    //           ...project,
+    //           tasks: project.tasks.map((task) => (task.id === updatedTask.id ? updatedTask : task)),
+    //         }
+    //       : project
+    //   )
+    // );
     // Also update in playlist if it exists there
-    setPlaylist((prev) =>
-      prev.map((task) =>
-        task.id === updatedTask.id
-          ? {
-              ...task,
-              name: updatedTask.name,
-              projectId: updatedTask.projectId,
-              duration: updatedTask.duration,
-              dueDate: updatedTask.dueDate,
-              tags: updatedTask.tags,
-            }
-          : task
-      )
-    );
+    // setPlaylist((prev) =>
+    //   prev.map((task) =>
+    //     task.id === updatedTask.id
+    //       ? {
+    //           ...task,
+    //           name: updatedTask.name,
+    //           projectId: updatedTask.projectId,
+    //           duration: updatedTask.duration,
+    //           dueDate: updatedTask.dueDate,
+    //           tags: updatedTask.tags,
+    //         }
+    //       : task
+    //   )
+    // );
   };
 
-  const router = useRouter();
+  const [taskErrors, setTaskErrors] = useState<TaskErrors>({});
+  const handleCreateTask = (projectId: number, formData: FormData) => {
+    setTaskErrors({});
+
+    const name = formData.get('name') as string;
+    const description = formData.get('description') as string;
+    const end_at = formData.get('end_at') as string;
+
+    // For UX validation
+    if (!name.trim()) {
+      setTaskErrors({ name: ['タスク名を入力してください'] });
+      return;
+    }
+
+    const body = {
+      name,
+      description,
+      status: 'in_progress' as TaskStatus,
+      priority: 'low' as TaskPriority,
+      start_at: format(startOfToday(), 'yyyy-MM-dd HH:mm:ss'),
+      end_at,
+      is_today: false,
+      assigned_to: null,
+    };
+
+    const task = {
+      ...body,
+      id: -Date.now(),
+      updated_at: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      creator: currentUser,
+      assignee: null,
+      labels: [],
+      project_id: projectId,
+      created_by: currentUser.id,
+    };
+
+    setTasksByProject((prev) => ({
+      ...prev,
+      [projectId]: [task, ...(prev[projectId] || [])],
+    }));
+    createTask(projectId, body).then((res) => {
+      if (res.success) {
+        const newTask: TaskList = res.data;
+        setTasksByProject((prev) => ({
+          ...prev,
+          [projectId]: prev[projectId].map((t) => (t.id === task.id ? newTask : t)),
+        }));
+        return;
+      }
+      if (res.errors) {
+        setTasksByProject((prev) => ({
+          ...prev,
+          [projectId]: prev[projectId].filter((t) => t.id !== task.id),
+        }));
+        setTaskErrors(res.errors);
+      }
+    });
+  };
+
+  // 楽観的 UI 更新 Tasks
+  const [isLoading, setIsLoading] = useState(false);
+  const [tasksByProject, setTasksByProject] = useState<Record<number, TaskList[]>>({});
+  const [taskLabelsByProject, setTaskLabelsByProject] = useState<Record<number, TaskLabel[]>>({});
+  const handleTriggerClick = async (projectId: number) => {
+    const hasProjectFetched = Object.keys(tasksByProject).includes(String(projectId));
+    if (hasProjectFetched || isLoading) return;
+    setIsLoading(true);
+
+    const taskRes = await getTasks(projectId);
+    if (!taskRes.success) throw new Error('タスクの取得に失敗しました');
+    setTasksByProject((prev) => ({ ...prev, [projectId]: taskRes.data.data }));
+    const labelRes = await getTaskLabels(projectId);
+    if (!labelRes.success) throw new Error('タスクの取得に失敗しました');
+    setTaskLabelsByProject((prev) => ({ ...prev, [projectId]: labelRes.data }));
+    setIsLoading(false);
+  };
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      {/* <header className="border-b border-border">
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-semibold text-foreground">My Trees: Today&apos;s Focus</h1>
-          <Button onClick={() => router.push('/member')} variant="ghost" size="icon">
-            <TreesIcon className="h-5 w-5 text-[var(--forest-accent)]" />
-          </Button>
-        </div>
-      </header> */}
-
       {/* Two Column Layout */}
       <div className="container mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -318,6 +205,10 @@ export function DailyTaskScreen({ projectsPaginated, currentUser, todayTasks }: 
             onAddTask={handleAddToPlaylist}
             onEditTask={handleEditTask}
             onCreateTask={handleCreateTask}
+            taskLabelsByProject={taskLabelsByProject}
+            tasksByProject={tasksByProject}
+            onTriggerClick={handleTriggerClick}
+            taskErrors={taskErrors}
           />
 
           {/* Right Column - Today's Playlist */}
