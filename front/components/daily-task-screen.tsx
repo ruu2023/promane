@@ -11,7 +11,7 @@ import { ProjectList } from '@/types/project';
 import { User } from '@/types/user';
 import { TaskErrors, TaskList, TaskPriority, TaskStatus, TodayTask } from '@/types/task';
 import { startOfToday, format } from 'date-fns';
-import { createTask, getTasks } from '@/actions/task-actions';
+import { createTask, getTasks, updateTask } from '@/actions/task-actions';
 import { getTaskLabels } from '@/actions/task-label-actions';
 import { TaskLabel } from '@/types/task-label';
 
@@ -44,51 +44,125 @@ export function DailyTaskScreen({ projectsPaginated, currentUser, todayTasks }: 
   const [projects, setProjects] = useState<ProjectList[]>(projectsPaginated.data);
   const [playlist, setPlaylist] = useState<TodayTask[]>(todayTasks);
 
-  const handleAddToPlaylist = (task: TaskList) => {
+  // 楽観的 UI 更新 Tasks
+  const [isLoading, setIsLoading] = useState(false);
+  const [tasksByProject, setTasksByProject] = useState<Record<number, TaskList[]>>({});
+  const [taskLabelsByProject, setTaskLabelsByProject] = useState<Record<number, TaskLabel[]>>({});
+  const handleTriggerClick = async (projectId: number) => {
+    const hasProjectFetched = Object.keys(tasksByProject).includes(String(projectId));
+    if (hasProjectFetched || isLoading) return;
+    setIsLoading(true);
+
+    const taskRes = await getTasks(projectId);
+    if (!taskRes.success) throw new Error('タスクの取得に失敗しました');
+    setTasksByProject((prev) => ({ ...prev, [projectId]: taskRes.data.data }));
+    const labelRes = await getTaskLabels(projectId);
+    if (!labelRes.success) throw new Error('タスクの取得に失敗しました');
+    setTaskLabelsByProject((prev) => ({ ...prev, [projectId]: labelRes.data }));
+    setIsLoading(false);
+  };
+
+  const handleAddToPlaylist = async (project: ProjectList, task: TaskList) => {
     // Remove from project
-    // setProjects((prev) =>
-    //   prev.map((project) =>
-    //     project.id === task.projectId
-    //       ? { ...project, tasks: project.tasks.filter((t) => t.id !== task.id) }
-    //       : project
-    //   )
-    // );
-    // Add to playlist
-    // const newTask: PlaylistTask = {
-    //   ...task,
-    //   completed: false,
-    // };
-    // setPlaylist((prev) => [...prev, newTask]);
+    const updatedTask = {
+      ...task,
+      is_today: true,
+    };
+
+    setTasksByProject((prev) => ({
+      ...prev,
+      [project.id]: prev[project.id].map((t) => (t.id === task.id ? updatedTask : t)),
+    }));
+
+    const updatedPlayListTask = {
+      ...updatedTask,
+      project,
+    };
+
+    setPlaylist((prev) => [...prev, updatedPlayListTask]);
+
+    const res = await updateTask(task.id, updatedTask);
+    if (res.success) {
+      const newTask: TodayTask = { ...res.data, project };
+      setPlaylist((prev) => prev.map((t) => (t.id === task.id ? newTask : t)));
+      return;
+    }
+    setPlaylist((prev) => prev.filter((p) => p.id !== task.id));
+    const err = res.message;
   };
 
-  const handleRemoveFromPlaylist = (task: TodayTask) => {
-    // Remove from playlist
-    // setPlaylist((prev) => prev.filter((t) => t.id !== task.id));
-    // Add back to project
-    // const taskWithoutPlaylistProps: Task = {
-    //   id: task.id,
-    //   name: task.name,
-    //   projectId: task.projectId,
-    //   duration: task.duration,
-    //   dueDate: task.dueDate,
-    //   tags: task.tags,
-    // };
-    // setProjects((prev) =>
-    //   prev.map((project) =>
-    //     project.id === task.projectId
-    //       ? { ...project, tasks: [...project.tasks, taskWithoutPlaylistProps] }
-    //       : project
-    //   )
-    // );
+  const handleRemoveFromPlaylist = async (project: ProjectList, task: TodayTask) => {
+    // Remove from project
+    const updatedTask = {
+      ...task,
+      creator: currentUser,
+      labels: [],
+      is_today: false,
+    };
+
+    const prevTasks = tasksByProject[project.id] ?? null;
+    if (prevTasks) {
+      setTasksByProject((prev) => {
+        const prevTasks = prev[project.id] ?? [];
+        return {
+          ...prev,
+          [project.id]: prevTasks.map((t) => (t.id === task.id ? updatedTask : t)),
+        };
+      });
+    }
+
+    const updatedPlayListTask = {
+      ...updatedTask,
+      project,
+    };
+
+    setPlaylist((prev) => prev.filter((p) => p.id !== task.id));
+
+    const res = await updateTask(task.id, updatedTask);
+    if (res.success) {
+      const newTask: TodayTask = { ...res.data, project };
+      setPlaylist((prev) => prev.map((t) => (t.id === task.id ? newTask : t)));
+      return;
+    }
+
+    setPlaylist((prev) => [...prev, updatedPlayListTask]);
+    const err = res.message;
   };
 
-  const handleToggleComplete = (taskId: number) => {
-    // setPlaylist((prev) =>
-    //   prev.map((task) => (task.id === taskId ? { ...task, completed: !task.completed } : task))
-    // );
+  const handleToggleComplete = async (task: TodayTask) => {
+    const newStatus = task.status !== 'done' ? 'done' : 'in_progress';
+    setPlaylist((prev) => prev.map((t) => (t.id === task.id ? { ...t, status: newStatus } : t)));
+
+    const updatedTask = {
+      ...task,
+      status: newStatus as TaskStatus,
+      creator: currentUser,
+      labels: [],
+    };
+    const res = await updateTask(task.id, updatedTask);
+    if (res.success) {
+      setPlaylist((prev) => prev.map((t) => (t.id === task.id ? { ...t, ...res.data } : t)));
+      return;
+    }
+
+    setPlaylist((prev) => prev.map((t) => (t.id === task.id ? { ...t, status: task.status } : t)));
+    const err = res.message;
   };
 
-  const handleEditTask = (updatedTask: TaskList) => {
+  const handleEditTask = async (task: TaskList) => {
+    const updatedTask = {
+      ...task,
+      creator: currentUser,
+      labels: [],
+    };
+    const res = await updateTask(task.id, updatedTask);
+    if (res.success) {
+      setPlaylist((prev) => prev.map((t) => (t.id === task.id ? { ...t, ...res.data } : t)));
+      return;
+    }
+
+    // setPlaylist((prev) => prev.map((t) => (t.id === task.id ? { ...t, status: task.status } : t)));
+    const err = res.message;
     // setProjects((prev) =>
     //   prev.map((project) =>
     //     project.id === updatedTask.projectId
@@ -174,24 +248,6 @@ export function DailyTaskScreen({ projectsPaginated, currentUser, todayTasks }: 
         setTaskErrors(res.errors);
       }
     });
-  };
-
-  // 楽観的 UI 更新 Tasks
-  const [isLoading, setIsLoading] = useState(false);
-  const [tasksByProject, setTasksByProject] = useState<Record<number, TaskList[]>>({});
-  const [taskLabelsByProject, setTaskLabelsByProject] = useState<Record<number, TaskLabel[]>>({});
-  const handleTriggerClick = async (projectId: number) => {
-    const hasProjectFetched = Object.keys(tasksByProject).includes(String(projectId));
-    if (hasProjectFetched || isLoading) return;
-    setIsLoading(true);
-
-    const taskRes = await getTasks(projectId);
-    if (!taskRes.success) throw new Error('タスクの取得に失敗しました');
-    setTasksByProject((prev) => ({ ...prev, [projectId]: taskRes.data.data }));
-    const labelRes = await getTaskLabels(projectId);
-    if (!labelRes.success) throw new Error('タスクの取得に失敗しました');
-    setTaskLabelsByProject((prev) => ({ ...prev, [projectId]: labelRes.data }));
-    setIsLoading(false);
   };
 
   return (

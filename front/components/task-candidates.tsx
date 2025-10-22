@@ -22,7 +22,7 @@ import { startOfToday, format } from 'date-fns';
 
 interface TaskCandidatesProps {
   projects: ProjectList[];
-  onAddTask: (task: TaskList) => void;
+  onAddTask: (project: ProjectList, task: TaskList) => void;
   onEditTask: (task: TaskList) => void;
   onCreateTask: (tprojectId: number, formData: FormData) => void;
   tasksByProject: Record<number, TaskList[]>;
@@ -42,7 +42,7 @@ export function TaskCandidates({
   taskErrors,
 }: TaskCandidatesProps) {
   const [modalOpen, setModalOpen] = useState(false);
-  const [selectedTask, setSelectedTask] = useState<TaskList | undefined>();
+  const [selectedTask, setSelectedTask] = useState<TaskList>();
 
   const handleEditTask = (task: TaskList) => {
     setSelectedTask(task);
@@ -57,6 +57,9 @@ export function TaskCandidates({
         {projects.map((project) => {
           const tasks = tasksByProject[project.id] ?? [];
           const availableTags = taskLabelsByProject[project.id]?.map((label) => label.name) ?? [];
+          const filteredTasks = tasks
+            .filter((t) => t.is_today !== true && t.status !== 'done')
+            .slice(0, 6);
           return (
             <AccordionItem
               key={project.id}
@@ -74,16 +77,18 @@ export function TaskCandidates({
                   <QuickTaskAdd
                     defaultDueDate={startOfToday()}
                     availableTags={availableTags}
-                    onAddTask={(formData) => onCreateTask(project.id, formData)}
+                    onCreateTask={(formData) => onCreateTask(project.id, formData)}
                     taskErrors={taskErrors}
                   />
 
                   {/* Task List */}
                   <div className="space-y-2">
-                    {project.tasks_count === 0 ? (
+                    {filteredTasks.length === 0 && (
                       <p className="text-sm text-muted-foreground py-2">No tasks available</p>
-                    ) : (
-                      tasks.slice(0, 6).map((task) => (
+                    )}
+
+                    {filteredTasks.map((task) => {
+                      return (
                         <div
                           key={task.id}
                           className="flex items-center justify-between py-2 px-3 rounded-md hover:bg-accent transition-colors group"
@@ -102,14 +107,14 @@ export function TaskCandidates({
                               variant="ghost"
                               size="icon"
                               className="h-7 w-7 text-[var(--forest-accent)] hover:text-[var(--forest-accent)] hover:bg-[var(--forest-light)]"
-                              onClick={() => onAddTask(task)}
+                              onClick={() => onAddTask(project, task)}
                             >
                               <Plus className="h-4 w-4" />
                             </Button>
                           </div>
                         </div>
-                      ))
-                    )}
+                      );
+                    })}
                   </div>
                 </div>
               </AccordionContent>
@@ -118,15 +123,17 @@ export function TaskCandidates({
         })}
       </Accordion>
 
-      {/* <TaskModal
-        open={modalOpen}
-        onOpenChange={setModalOpen}
-        mode="edit"
-        task={selectedTask}
-        projectId={selectedTask?.projectId || ''}
-        projects={projects}
-        onSave={handleSaveTask}
-      /> */}
+      {selectedTask && (
+        <TaskModal
+          open={modalOpen}
+          onOpenChange={setModalOpen}
+          mode="edit"
+          task={selectedTask}
+          projectId={selectedTask.project_id}
+          projects={projects}
+          onSave={onEditTask}
+        />
+      )}
     </div>
   );
 }

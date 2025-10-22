@@ -328,7 +328,7 @@ export function ProjectOverview({ projectsPaginated, currentUser }: Props) {
                     <QuickTaskAdd
                       defaultDueDate={startOfToday()}
                       availableTags={availableTags}
-                      onAddTask={(formData) => handleAddTask(project.id, formData)}
+                      onCreateTask={(formData) => handleAddTask(project.id, formData)}
                       taskErrors={taskErrors}
                     />
                   </div>

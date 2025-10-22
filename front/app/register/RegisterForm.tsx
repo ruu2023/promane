@@ -1,6 +1,18 @@
-'use client'
+'use client';
+
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import Header from '@/components/header';
 import { useState } from 'react';
-import styles from './RegisterForm.module.scss';
 
 export default function RegisterForm() {
   const [name, setName] = useState('');
@@ -24,14 +36,70 @@ export default function RegisterForm() {
   }
 
   return (
-    <form onSubmit={submit} className={styles.form}>
-      <label htmlFor="name">名前</label>
-      <input type="text" id="name" value={name} onChange={e => setName(e.target.value)} className={styles.input} />
-      <label htmlFor="email">メールアドレス</label>
-      <input type="email" id="email"  value={email} onChange={e => setEmail(e.target.value)} className={styles.input} />
-      <label htmlFor="password">パスワード</label>
-      <input type="password" id="password" value={password} onChange={e => setPassword(e.target.value)} className={styles.input} />
-      <button type="submit">登録</button>
-    </form>
+    <div className="flex min-h-screen flex-col">
+      <Header />
+
+      {/* メインコンテンツを中央に配置 */}
+      <main className="flex flex-1 items-center justify-center p-4">
+        {/* フォームをカードで囲む */}
+        <Card className="w-full max-w-sm">
+          <form onSubmit={submit}>
+            <CardHeader>
+              <CardTitle className="text-2xl">ログイン</CardTitle>
+              <CardDescription>
+                お名前、メールアドレスとパスワードを入力してください。
+              </CardDescription>
+            </CardHeader>
+
+            <CardContent className="space-y-4 mt-8">
+              {/* Name */}
+              <div className="space-y-2">
+                <Label htmlFor="fullName">お名前</Label>
+                <Input
+                  id="fullName"
+                  type="text"
+                  placeholder="Runch Wizard" // プレースホルダーを追加
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required // 必須項目にする
+                />
+              </div>
+              {/* Email */}
+              <div className="space-y-2">
+                <Label htmlFor="email">メールアドレス</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="me@example.com" // プレースホルダーを追加
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required // 必須項目にする
+                />
+              </div>
+
+              {/* Password */}
+              <div className="space-y-2">
+                <Label htmlFor="password">パスワード</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+            </CardContent>
+
+            <CardFooter>
+              <Button type="submit" className="w-full mt-8">
+                {' '}
+                {/* 幅いっぱいのボタン */}
+                ログイン
+              </Button>
+            </CardFooter>
+          </form>
+        </Card>
+      </main>
+    </div>
   );
 }

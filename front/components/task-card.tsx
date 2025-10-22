@@ -13,8 +13,13 @@ interface TaskCardProps {
 
 export function TaskCard({ task, onDoneClick }: TaskCardProps) {
   const endDate = task.end_at ? parseISO(task.end_at) : new Date();
+  const isDone = task.status === 'done';
   return (
-    <div className="rounded-lg border border-border bg-card p-4 shadow-sm transition-all hover:shadow-md">
+    <div
+      className={`rounded-lg border border-border bg-card p-4 shadow-sm transition-all hover:shadow-md ${
+        isDone && 'saturate-50 opacity-75'
+      }`}
+    >
       {/* Task Name */}
       <h3 className="mb-3 text-sm font-medium leading-snug text-card-foreground">{task.name}</h3>
 
@@ -42,13 +47,15 @@ export function TaskCard({ task, onDoneClick }: TaskCardProps) {
       )}
 
       {/* Done */}
-      <Button
-        type="button"
-        onClick={onDoneClick}
-        className="bg-[var(--forest-accent)] hover:bg-[var(--forest-muted)] text-white"
-      >
-        Done
-      </Button>
+      {!isDone && (
+        <Button
+          type="button"
+          onClick={onDoneClick}
+          className="bg-[var(--forest-accent)] hover:bg-[var(--forest-muted)] text-white"
+        >
+          Done
+        </Button>
+      )}
     </div>
   );
 }

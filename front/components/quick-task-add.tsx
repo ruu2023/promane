@@ -19,14 +19,14 @@ import { SubmitButton } from './submit-button';
 interface QuickTaskAddProps {
   defaultDueDate: Date;
   availableTags?: string[];
-  onAddTask: (formData: FormData) => void;
+  onCreateTask: (formData: FormData) => void;
   taskErrors: TaskErrors;
 }
 
 export function QuickTaskAdd({
   defaultDueDate,
   availableTags = [],
-  onAddTask,
+  onCreateTask,
   taskErrors,
 }: QuickTaskAddProps) {
   const [taskName, setTaskName] = useState('');
@@ -42,7 +42,7 @@ export function QuickTaskAdd({
         onSubmit={(e) => {
           e.preventDefault();
           const formData = new FormData(e.currentTarget);
-          onAddTask(formData);
+          onCreateTask(formData);
           formRef.current?.reset();
         }}
         className="space-y-3"

@@ -4,14 +4,14 @@ import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import type { PlaylistTask, Project } from '@/components/daily-task-screen';
-import { TodayTask } from '@/types/task';
+import { TaskList, TodayTask } from '@/types/task';
 import { ProjectList } from '@/types/project';
 
 interface TodaysPlaylistProps {
   tasks: TodayTask[];
   projects: ProjectList[];
-  onRemoveTask: (task: TodayTask) => void;
-  onToggleComplete: (taskId: number) => void;
+  onRemoveTask: (project: ProjectList, task: TodayTask) => void;
+  onToggleComplete: (task: TodayTask) => void;
 }
 
 export function TodaysPlaylist({
@@ -36,59 +36,63 @@ export function TodaysPlaylist({
             </p>
           </div>
         ) : (
-          tasks.map((task) => {
-            const project = getProjectInfo(task.project_id);
-            return (
-              <div
-                key={task.id}
-                className="border border-border rounded-lg bg-card p-4 hover:shadow-sm transition-shadow"
-              >
-                <div className="flex items-center gap-3">
-                  {/* Checkbox */}
-                  <Checkbox
-                    checked={task.status === 'done'}
-                    onCheckedChange={() => onToggleComplete(task.id)}
-                    className="data-[state=checked]:bg-[var(--forest-accent)] data-[state=checked]:border-[var(--forest-accent)]"
-                  />
+          tasks
+            .filter((t) => t.status !== 'done')
+            .map((task) => {
+              const project = getProjectInfo(task.project_id);
+              return (
+                <div
+                  key={task.id}
+                  className="border border-border rounded-lg bg-card p-4 hover:shadow-sm transition-shadow"
+                >
+                  <div className="flex items-center gap-3">
+                    {/* Checkbox */}
+                    <Checkbox
+                      checked={task.status === 'done'}
+                      onCheckedChange={() => onToggleComplete(task)}
+                      className="data-[state=checked]:bg-[var(--forest-accent)] data-[state=checked]:border-[var(--forest-accent)]"
+                    />
 
-                  {/* Task Content */}
-                  <div className="flex-1 min-w-0">
-                    <h3
-                      className={`text-sm font-medium mb-2 ${
-                        task.status === 'done'
-                          ? 'line-through text-muted-foreground'
-                          : 'text-foreground'
-                      }`}
-                    >
-                      {task.name}
-                    </h3>
-
-                    {project && (
-                      <span
-                        className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                        style={{
-                          // backgroundColor: project.color,
-                          color: 'white',
-                        }}
+                    {/* Task Content */}
+                    <div className="flex-1 min-w-0">
+                      <h3
+                        className={`text-sm font-medium mb-2 ${
+                          task.status === 'done'
+                            ? 'line-through text-muted-foreground'
+                            : 'text-foreground'
+                        }`}
                       >
-                        {project.name}
-                      </span>
+                        {task.name}
+                      </h3>
+
+                      {project && (
+                        <span
+                          className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                          style={{
+                            // backgroundColor: project.color,
+                            color: 'white',
+                          }}
+                        >
+                          {project.name}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Remove Button */}
+                    {project && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-foreground shrink-0"
+                        onClick={() => onRemoveTask(project, task)}
+                      >
+                        <ArrowLeft className="h-4 w-4" />
+                      </Button>
                     )}
                   </div>
-
-                  {/* Remove Button */}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-muted-foreground hover:text-foreground shrink-0"
-                    onClick={() => onRemoveTask(task)}
-                  >
-                    <ArrowLeft className="h-4 w-4" />
-                  </Button>
                 </div>
-              </div>
-            );
-          })
+              );
+            })
         )}
       </div>
     </div>
