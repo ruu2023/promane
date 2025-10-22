@@ -265,6 +265,7 @@ export function DailyTaskScreen({ projectsPaginated, currentUser, todayTasks }: 
             tasksByProject={tasksByProject}
             onTriggerClick={handleTriggerClick}
             taskErrors={taskErrors}
+            isLoading={isLoading}
           />
 
           {/* Right Column - Today's Playlist */}

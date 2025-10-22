@@ -16,7 +16,8 @@ class TaskController extends Controller
             ->with(['assignee', 'creator', 'labels'])
             ->when($request->status, fn ($q) => $q->where('status', $request->status))
             ->when($request->priority, fn ($q) => $q->where('priority', $request->priority))
-            ->latest()
+            // ->latest()
+            ->orderByRaw('end_at is NULL ASC, end_at ASC')
             ->paginate(50);
 
         return response()->json($tasks);
