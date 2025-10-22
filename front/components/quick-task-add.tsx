@@ -89,7 +89,7 @@ export function QuickTaskAdd({
                 <Button
                   variant="outline"
                   className={cn(
-                    'w-full justify-start text-left font-normal mt-1',
+                    'w-full justify-start text-left font-normal mt-1 overflow-hidden',
                     !dueDate && 'text-muted-foreground'
                   )}
                 >
@@ -108,7 +108,7 @@ export function QuickTaskAdd({
             <InputErrorPopover message={taskErrors?.end_at?.[0]} />
           </div>
 
-          <div>
+          {/* <div>
             <TagInput
               label="Tags"
               placeholder="Add tags"
@@ -116,7 +116,7 @@ export function QuickTaskAdd({
               value={tags}
               onChange={setTags}
             />
-          </div>
+          </div> */}
         </div>
 
         {/* Add Button */}

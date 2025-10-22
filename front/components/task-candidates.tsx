@@ -29,6 +29,7 @@ interface TaskCandidatesProps {
   taskLabelsByProject: Record<number, TaskLabel[]>;
   onTriggerClick: (projectId: number) => void;
   taskErrors: TaskErrors;
+  isLoading: boolean;
 }
 
 export function TaskCandidates({
@@ -40,6 +41,7 @@ export function TaskCandidates({
   taskLabelsByProject,
   onTriggerClick,
   taskErrors,
+  isLoading,
 }: TaskCandidatesProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<TaskList>();
@@ -56,6 +58,7 @@ export function TaskCandidates({
       <Accordion type="multiple" className="space-y-2">
         {projects.map((project) => {
           const tasks = tasksByProject[project.id] ?? [];
+          const isFetching = isLoading;
           const availableTags = taskLabelsByProject[project.id]?.map((label) => label.name) ?? [];
           const filteredTasks = tasks
             .filter((t) => t.is_today !== true && t.status !== 'done')
@@ -83,38 +86,42 @@ export function TaskCandidates({
 
                   {/* Task List */}
                   <div className="space-y-2">
-                    {filteredTasks.length === 0 && (
+                    {!isFetching && filteredTasks.length === 0 && (
                       <p className="text-sm text-muted-foreground py-2">No tasks available</p>
                     )}
 
-                    {filteredTasks.map((task) => {
-                      return (
-                        <div
-                          key={task.id}
-                          className="flex items-center justify-between py-2 px-3 rounded-md hover:bg-accent transition-colors group"
-                        >
-                          <span className="text-sm text-foreground flex-1">{task.name}</span>
-                          <div className="flex items-center gap-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-accent opacity-0 group-hover:opacity-100 transition-opacity"
-                              onClick={() => handleEditTask(task)}
-                            >
-                              <Pencil className="h-3.5 w-3.5" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7 text-[var(--forest-accent)] hover:text-[var(--forest-accent)] hover:bg-[var(--forest-light)]"
-                              onClick={() => onAddTask(project, task)}
-                            >
-                              <Plus className="h-4 w-4" />
-                            </Button>
+                    {isFetching && filteredTasks.length === 0 ? (
+                      <TaskSkeleton />
+                    ) : (
+                      filteredTasks.map((task) => {
+                        return (
+                          <div
+                            key={task.id}
+                            className="flex items-center justify-between py-2 px-3 rounded-md hover:bg-accent transition-colors group"
+                          >
+                            <span className="text-sm text-foreground flex-1">{task.name}</span>
+                            <div className="flex items-center gap-1">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-accent opacity-0 group-hover:opacity-100 transition-opacity"
+                                onClick={() => handleEditTask(task)}
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 text-[var(--forest-accent)] hover:text-[var(--forest-accent)] hover:bg-[var(--forest-light)]"
+                                onClick={() => onAddTask(project, task)}
+                              >
+                                <Plus className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })
+                    )}
                   </div>
                 </div>
               </AccordionContent>
