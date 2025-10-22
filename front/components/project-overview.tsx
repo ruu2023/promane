@@ -144,7 +144,6 @@ export function ProjectOverview({ projectsPaginated, currentUser }: Props) {
    * Task
    */
   const [isLoading, setIsLoading] = useState(false);
-  const [tasksPerPage, setTasksPerPage] = useState(20);
   // 楽観的 UI 更新 Tasks
   const [tasksByProject, setTasksByProject] = useState<Record<number, TaskList[]>>({});
   const [taskLabelsByProject, setTaskLabelsByProject] = useState<Record<number, TaskLabel[]>>({});
@@ -156,7 +155,6 @@ export function ProjectOverview({ projectsPaginated, currentUser }: Props) {
     const taskRes = await getTasks(projectId);
     if (!taskRes.success) throw new Error('タスクの取得に失敗しました');
     setTasksByProject((prev) => ({ ...prev, [projectId]: taskRes.data.data }));
-    setTasksPerPage(taskRes.data.per_page);
     const labelRes = await getTaskLabels(projectId);
     if (!labelRes.success) throw new Error('タスクの取得に失敗しました');
     setTaskLabelsByProject((prev) => ({ ...prev, [projectId]: labelRes.data }));
@@ -330,7 +328,7 @@ export function ProjectOverview({ projectsPaginated, currentUser }: Props) {
                     <QuickTaskAdd
                       defaultDueDate={startOfToday()}
                       availableTags={availableTags}
-                      onAddTask={(formData) => handleAddTask(project.id, formData)}
+                      onCreateTask={(formData) => handleAddTask(project.id, formData)}
                       taskErrors={taskErrors}
                     />
                   </div>

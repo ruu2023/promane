@@ -9,7 +9,7 @@ const Member = async () => {
     <>
       <Header />
       <Suspense fallback={<ProjectSkeleton />}>
-        <SuspengecePage />
+        <SuspengecePage pageName="forest" />
       </Suspense>
     </>
   );

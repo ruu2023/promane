@@ -1,3 +1,4 @@
+import { ProjectBase } from './project';
 import { TaskLabel } from './task-label';
 import { User } from './user';
 
@@ -33,6 +34,11 @@ export type TaskDetail = Task & {
   labels: TaskLabel[];
 };
 
+export type TodayTask = Task & {
+  project: ProjectBase;
+  assignee: User | null;
+};
+
 export type postTaskInput = {
   name: string;
   description: string | null;
@@ -45,17 +51,3 @@ export type postTaskInput = {
 };
 
 export type TaskErrors = { [key: string]: string[] };
-
-// export interface Task {
-//   id: string;
-//   title: string;
-//   priority: 'high' | 'medium' | 'low';
-//   assignee: {
-//     name: string;
-//     avatar: string;
-//   };
-//   dueDate: string;
-//   comments: number;
-//   labels: number;
-//   status: 'backlog' | 'in-progress' | 'review' | 'done';
-// }

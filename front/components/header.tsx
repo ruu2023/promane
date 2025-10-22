@@ -10,7 +10,7 @@ type Props = {
   link?: string;
 };
 
-const Header = ({ title = 'My Forest: Project Overview', link = '/daily' }: Props) => {
+const Header = ({ title = 'My Forest: Project Overview', link = '/member/daily' }: Props) => {
   const router = useRouter();
   return (
     <header className="border-b border-border">
