@@ -8,6 +8,8 @@
 
 ## 📖 概要
 
+https://promane-front-455056438426.asia-northeast1.run.app/
+
 このアプリケーションは、**Next.js 15** (フロントエンド) と **Laravel 11** (バックエンド API) によって構築されたプロジェクト管理ツールです。
 
 フロントエンドは `front` ディレクトリ内の Next.js プロジェクトとして管理されており、バックエンドは API として動作します。
@@ -48,7 +50,7 @@
 - Tailwind CSS
 - Node.js & npm
 
-### バックエンド (ルートディレクトリ)
+### バックエンド (`back`ディレクトリ)
 
 - PHP \>= 8.1
 - Laravel 11
@@ -63,7 +65,7 @@
 
 - **PHP-CS-Fixer**
 - 規約: **PSR-12** (リポジトリ内の `.php-cs-fixer.dist.php` に基づく)
-- 適用コマンド (ルートで実行):
+- 適用コマンド (`back`で実行):
       `bash     composer fix     `
 
 ### JavaScript / React / CSS (フロントエンド)
@@ -90,7 +92,7 @@
 
 ## ⚙️ セットアップ手順
 
-このプロジェクトは、バックエンド (Laravel Sail) とフロントエンド (Next.js) を別々にセットアップし、起動します。
+このプロジェクトは、バックエンド (Laravel) とフロントエンド (Next.js) を別々にセットアップし、起動します。
 
 ### 1\. リポジトリのクローンと移動
 
@@ -144,8 +146,8 @@ cd promane
 
 ブラウザで各サービスにアクセスして動作確認してください。
 
-- **フロントエンド (Next.js)**: [http://localhost:3000](https://www.google.com/search?q=http://localhost:3000) (Next.js のデフォルト)
-- **バックエンド (Laravel)**: [http://localhost](https://www.google.com/search?q=http://localhost) (Sail のデフォルト)
+- **フロントエンド (Next.js)**: http://localhost:3000 (Next.js のデフォルト)
+- **バックエンド (Laravel)**: http://localhost:8000
 
 ---
 
