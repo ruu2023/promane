@@ -27,17 +27,17 @@ https://promane-front-455056438426.asia-northeast1.run.app/
 - フロントエンド：Next.js によるインタラクティブな UI
 - バックエンド：Laravel による堅牢な API
 
-![プロジェクト作成](https://pub-fe9124e9c12542c486765d4b468909a4.r2.dev/2025-10/1.webp)
+![プロジェクト作成](./_docs/img/1.gif)
 
-![タスク作成](https://pub-fe9124e9c12542c486765d4b468909a4.r2.dev/2025-10/2.webp)
+![タスク作成](./_docs/img/2.gif)
 
-![木モードへの移動](https://pub-fe9124e9c12542c486765d4b468909a4.r2.dev/2025-10/3.webp)
+![木モードへの移動](./_docs/img/3.gif)
 
-![タスクの完了](https://pub-fe9124e9c12542c486765d4b468909a4.r2.dev/2025-10/4.webp)
+![タスクの完了](./_docs/img/4.gif)
 
-![森モードへの移動とタスクの完了](https://pub-fe9124e9c12542c486765d4b468909a4.r2.dev/2025-10/5.webp)
+![森モードへの移動とタスクの完了](./_docs/img/5.gif)
 
-![alt text](https://pub-fe9124e9c12542c486765d4b468909a4.r2.dev/2025-10/dbschema.webp)
+![alt text](./_docs/img/dbschema.svg)
 
 ---
 
